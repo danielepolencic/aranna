@@ -1,0 +1,20 @@
+{
+  "name": "ecs",
+  "version": "0.0.1",
+  "description": "Entity Component System",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "mocha test/"
+  },
+  "author": "Daniele Polencic <daniele.polencic@gmail.com>",
+  "license": "MITISC",
+  "dependencies": {
+    "es6-shim": "^0.13.0"
+  },
+  "devDependencies": {
+    "mocha": "^1.20.1"
+  }
+}
