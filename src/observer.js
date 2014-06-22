@@ -2,15 +2,14 @@ module.exports.notify = function notify (listeners) {
   return function (entity) {
     if (!entity) return;
 
-    var callbacks = new Set();
-    reduceEntity(entity).forEach(function (component) {
-      listeners.get(component).forEach(function (fn) {
-        callbacks.add(fn);
-      });
-    });
+    listeners.forEach(function (fn, topics) {
+      var isMatching = !reduceEntity(entity).reduce(function (topics, component) {
+        var index = topics.indexOf(component);
+        if (index !== -1) topics.splice(index, 1);
+        return topics;
+      }, topics).length;
 
-    callbacks.forEach(function (fn) {
-      fn.call(null, entity);
+      if (isMatching) fn.call(null, entity);
     });
   };
 };
@@ -21,12 +20,7 @@ module.exports.register = function register (listeners) {
     var topics = [].slice.call(arguments);
 
     return function (fn) {
-      topics.forEach(function (topic) {
-        if (!listeners.has(topic)) {
-          listeners.set(topic, new Set());
-        }
-        listeners.get(topic).add(fn);
-      });
+      listeners.set(topics, fn);
     };
 
   };

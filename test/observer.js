@@ -23,4 +23,12 @@ describe('Observer', function () {
     observer.notify(listeners)(entity);
   });
 
+  it('should not notify when one component is missing', function (done) {
+    observer.register(listeners)('position', 'velocity')(function () {
+      done('should not have been called');
+    });
+    observer.notify(listeners)(entity);
+    done();
+  });
+
 });

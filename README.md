@@ -4,7 +4,8 @@ System](http://en.wikipedia.org/wiki/Entity_component_system) written in
 JavaScript inspired by [ces.js](https://github.com/qiao/ces.js).
 
 ## Basic Usage
-Components are javascript classes with a required `name` property.
+Components are javascript classes with a required `name` property. Note that
+each component should have a unique `name` property.
 
 ```javascript
 function Position (x, y) {
@@ -100,24 +101,35 @@ specific entities and handle the signal accordingly:
 function MySystem () {}
 
 MySystem.prototype.addedToWorld = function (world)  {
+
   world.entityAdded('position', 'velocity')(function (entity) {
     /*
       This function is called whenever an entity with both 'position' and
-      'velocity' components is added to the world. It can also be called when
-      a component is added to an entity; for example, when an entity with only
-      'position' has 'velocity' added to it.
+      'velocity' components is added to the world.
     */
   });
-};
 
-MySystem.prototype.removedFromWorld = function (world) {
   world.entityRemoved('position', 'velocity')(function (entity) {
     /*
-      This function is called whenever an entity with both 'position' and
-      'velocity' components is removed from the world. It can also be called
-      when a component is removed from an entity; for example, when an entity
-      with both 'position' and 'velocity' has 'velocity' removed from it.
-    */
+       This function is called whenever an entity with both 'position' and
+       'velocity' components is removed from the world.
+     */
   });
-}
+
+  world.componentAdded('position', 'velocity')(function (entity) {
+    /*
+       This function is called whenever a component is added to an entity; for
+       example, when an entity with only 'position' has 'velocity' added to it.
+     */
+  });
+
+  world.componentRemoved('position', 'velocity')(function (entity) {
+    /*
+       This function is called whenever a component is removed to an entity; for
+       example, when an entity with both 'position' and 'velocity' has
+       'velocity' removed from it.
+     */
+  });
+
+};
 ```
