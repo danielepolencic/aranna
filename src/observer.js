@@ -1,35 +1,65 @@
-module.exports.notify = function notify (listeners) {
-  return function (entity) {
-    if (!entity) return;
+var util = require('./util');
 
-    listeners.forEach(function (fn, topics) {
-      var isMatching = !reduceEntity(entity).reduce(function (topics, component) {
-        var index = topics.indexOf(component);
-        if (index !== -1) topics.splice(index, 1);
-        return topics;
-      }, topics).length;
+module.exports.publisher = function publisher (listeners) {
+  return {
+    publish: function (topicsPublisher, args) {
+      if (!Array.isArray(topicsPublisher)) {
+        topicsPublisher = [].slice.call(arguments);
+        args = [];
+      }
 
-      if (isMatching) fn.call(null, entity);
-    });
+      listeners.forEach(function (listener, topicsSubscriber) {
+
+        if (util.isArrayContained(topicsPublisher, topicsSubscriber)) {
+          listener.apply(null, args);
+        }
+
+      });
+
+    }
   };
 };
 
 
-module.exports.register = function register (listeners) {
-  return function () {
-    var topics = [].slice.call(arguments);
+module.exports.subscriber = function subscriber (listeners) {
+  return {
+    subscribe: function () {
+      var topics = [].slice.call(arguments);
 
-    return function (fn) {
-      listeners.set(topics, fn);
-    };
+      return {
+        listener: function (fn) {
+          listeners.set(topics, fn);
+        }
+      };
 
+    }
   };
 };
 
-function reduceEntity (entity) {
-  var components = [];
-  entity.forEach(function (componentValue, componentName) {
-    components.push(componentName);
-  });
-  return components;
+module.exports.unsubscriber = function unsubscriber (listeners) {
+  return {
+    unsubscribe: function () {
+      var topicsUnsubscriber = [].slice.call(arguments);
+
+      return {
+        listener: function (fn) {
+          listeners.forEach(function (listener, topicsSubscriber) {
+            if (listener === fn &&
+                util.isArraySimilar(topicsSubscriber, topicsUnsubscriber)) {
+              listeners.delete(topicsSubscriber);
+            }
+          });
+        },
+        all: function () {
+          listeners.forEach(function (listener, topicsSubscriber) {
+            if (util.isArraySimilar(topicsSubscriber, topicsUnsubscriber)) {
+              listeners.delete(topicsSubscriber);
+            }
+          });
+        }
+      };
+
+    }
+  };
 };
+
