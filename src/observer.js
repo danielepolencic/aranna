@@ -1,65 +1,46 @@
 var util = require('./util');
 
-module.exports.publisher = function publisher (listeners) {
-  return {
-    publish: function (topicsPublisher, args) {
-      if (!Array.isArray(topicsPublisher)) {
-        topicsPublisher = [].slice.call(arguments);
-        args = [];
+module.exports = Observer;
+
+function Observer () {
+  this.listeners = new Map();
+};
+
+Observer.prototype.publish = function () {
+  topicsPublisher = util.toArray(arguments);
+
+  return function () {
+    var args = util.toArray(arguments);
+
+    this.listeners.forEach(function (listener, topicsSubscriber) {
+      if (util.isArrayContained(topicsPublisher, topicsSubscriber)) {
+        listener.apply(null, args);
       }
+    });
 
-      listeners.forEach(function (listener, topicsSubscriber) {
+  }.bind(this);
 
-        if (util.isArrayContained(topicsPublisher, topicsSubscriber)) {
-          listener.apply(null, args);
-        }
-
-      });
-
-    }
-  };
 };
 
+Observer.prototype.subscribe = function () {
+  var topics = util.toArray(arguments);
 
-module.exports.subscriber = function subscriber (listeners) {
-  return {
-    subscribe: function () {
-      var topics = [].slice.call(arguments);
+  return function (fn) {
+    this.listeners.set(topics, fn);
+  }.bind(this);
 
-      return {
-        listener: function (fn) {
-          listeners.set(topics, fn);
-        }
-      };
-
-    }
-  };
 };
 
-module.exports.unsubscriber = function unsubscriber (listeners) {
-  return {
-    unsubscribe: function () {
-      var topicsUnsubscriber = [].slice.call(arguments);
+Observer.prototype.unsubscribe = function () {
+  var topicsUnsubscriber = util.toArray(arguments);
 
-      return {
-        listener: function (fn) {
-          listeners.forEach(function (listener, topicsSubscriber) {
-            if (listener === fn &&
-                util.isArraySimilar(topicsSubscriber, topicsUnsubscriber)) {
-              listeners.delete(topicsSubscriber);
-            }
-          });
-        },
-        all: function () {
-          listeners.forEach(function (listener, topicsSubscriber) {
-            if (util.isArraySimilar(topicsSubscriber, topicsUnsubscriber)) {
-              listeners.delete(topicsSubscriber);
-            }
-          });
-        }
-      };
+  return function (fn) {
+    this.listeners.forEach(function (listener, topicsSubscriber) {
+      if (listener === fn &&
+          util.isArraySimilar(topicsSubscriber, topicsUnsubscriber)) {
+        this.listeners.delete(topicsSubscriber);
+      }
+    }, this);
+  }.bind(this);
 
-    }
-  };
 };
-

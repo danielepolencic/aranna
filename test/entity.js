@@ -1,10 +1,9 @@
-var assert = require('assert');
-
 require('es6-shim');
 
-var Entity = require('./../src/entity');
+var assert = require('assert')
+  , Entity = require('./../src/entity');
 
-describe.only('Entity', function () {
+describe('Entity', function () {
   var entity;
 
   beforeEach(function () {
@@ -13,8 +12,7 @@ describe.only('Entity', function () {
 
   it('should add a component', function (done) {
     var component = {name: 'position'};
-    entity.onComponentAdded('position')
-    .listener(function (componentClone, entityClone) {
+    entity.onComponentAdded('position')(function (componentClone, entityClone) {
       assert.deepEqual(entity, entityClone);
       assert.deepEqual(component, componentClone);
       done();
@@ -24,8 +22,7 @@ describe.only('Entity', function () {
 
   it('should remove a component', function (done) {
     var component = {name: 'position'};
-    entity.onComponentRemoved('position')
-    .listener(function (componentClone, entityClone) {
+    entity.onComponentRemoved('position')(function (componentClone, entityClone) {
       assert.deepEqual(entity, entityClone);
       assert.deepEqual(component, componentClone);
       done();
@@ -34,15 +31,15 @@ describe.only('Entity', function () {
     entity.removeComponent(component);
   });
 
-  it('should not propagate any update if listeners are removed', function () {
+  it('should not propagate any update if listeners are removed', function (done) {
     var component = {name: 'position'};
     var listener = function () {
       done('should not have been called');
     };
-    entity.onComponentAdded('position').listener(listener);
-    entity.onComponentRemoved('position').listener(listener);
-    entity.offComponentAdded('position').listener(listener);
-    entity.offComponentRemoved('position').listener(listener);
+    entity.onComponentAdded('position')(listener);
+    entity.onComponentRemoved('position')(listener);
+    entity.offComponentAdded('position')(listener);
+    entity.offComponentRemoved('position')(listener);
     entity.addComponent(component);
     entity.removeComponent(component);
     done();

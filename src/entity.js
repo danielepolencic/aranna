@@ -1,63 +1,43 @@
 var util = require('./util')
-  , observer = require('./observer')
-  , publisher = {}
-  , subscriber = {}
-  , unsubscriber = {}
-  , components = new Map();
-
-['componentAdded', 'componentRemoved'].forEach(function (event) {
-  var listeners = new Map();
-  [
-    {name: 'publisher', variable: publisher},
-    {name: 'unsubscriber', variable: unsubscriber},
-    {name: 'subscriber', variable: subscriber}
-  ]
-  .forEach(function (item) {
-    item.variable[event] = observer[item.name](listeners);
-  });
-});
+  , Observer = require('./observer')
+  , ComponentCollection = require('./componentCollection');
 
 module.exports = Entity;
 
-function Entity () {}
+function Entity () {
+  Observer.call(this);
+  ComponentCollection.call(this);
+}
 
-Entity.prototype.addComponent = util.pipeline(
-  addComponentTo(components),
-  reduceComponentsToTopics(components),
-  util.spread(publisher.componentAdded.publish)
-);
+['add', 'remove'].forEach(function (action) {
 
-Entity.prototype.removeComponent = util.pipeline(
-  removeComponentFrom(components),
-  reduceComponentsToTopics(components),
-  util.spread(publisher.componentRemoved.publish)
-);
+  Entity.prototype[action + 'Component'] = util.parallel(
+    ComponentCollection.prototype[action],
+    function (component) {
+      Observer.prototype.publish
+        .apply(this, ['#' + action].concat(component.name))
+        .call(this, component, this);
+    }
+  );
 
-Entity.prototype.onComponentAdded = subscriber.componentAdded.subscribe;
-Entity.prototype.onComponentRemoved = subscriber.componentRemoved.subscribe;
+});
 
-Entity.prototype.offComponentAdded = unsubscriber.componentAdded.unsubscribe;
-Entity.prototype.offComponentRemoved = unsubscriber.componentRemoved.unsubscribe;
-
-function addComponentTo (components) {
-  return function (component) {
-    components.set(component.name, component);
-    return component;
-  }
+Entity.prototype.onComponentAdded = function () {
+  var topics = util.toArray(arguments);
+  return Observer.prototype.subscribe.apply(this, ['#add'].concat(topics));
 };
 
-function removeComponentFrom (components) {
-  return function (component) {
-    return components.delete(util.isString(component) ? component : component.name);
-  }
+Entity.prototype.onComponentRemoved = function () {
+  var topics = util.toArray(arguments);
+  return Observer.prototype.subscribe.apply(this, ['#remove'].concat(topics));
 };
 
-function reduceComponentsToTopics (components) {
-  return function (component) {
-    var topics = [];
-    components.forEach(function (componentValue, componentName) {
-      topics.push(componentName);
-    });
-    return [topics, [component, this]];
-  };
+Entity.prototype.offComponentAdded = function () {
+  var topics = util.toArray(arguments);
+  return Observer.prototype.unsubscribe.apply(this, ['#add'].concat(topics));
+};
+
+Entity.prototype.offComponentRemoved = function () {
+  var topics = util.toArray(arguments);
+  return Observer.prototype.unsubscribe.apply(this, ['#remove'].concat(topics));
 };
