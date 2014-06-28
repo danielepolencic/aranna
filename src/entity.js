@@ -11,7 +11,7 @@ function Entity () {
 
 ['add', 'remove'].forEach(function (action) {
 
-  Entity.prototype[action + 'Component'] = util.parallel(
+  Entity.prototype[action + 'Component'] = util.sequential(
     ComponentCollection.prototype[action],
     function (component) {
       Observer.prototype.publish

@@ -18,6 +18,17 @@ module.exports.parallel = function parallel () {
   };
 };
 
+module.exports.sequential = function sequential () {
+  var args = [].slice.call(arguments);
+  return function (seed) {
+
+    args.reduce(function (acc, fn) {
+      return fn.call(this, acc);
+    }.bind(this), seed);
+
+  };
+};
+
 module.exports.isString = function (anything) {
   return Object.prototype.toString.call(anything) === '[object String]';
 };
