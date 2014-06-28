@@ -36,7 +36,7 @@ Observer.prototype.unsubscribe = function () {
 
   return function (fn) {
     this.listeners.forEach(function (listener, topicsSubscriber) {
-      if (listener === fn &&
+      if (!fn || listener === fn &&
           util.isArraySimilar(topicsSubscriber, topicsUnsubscriber)) {
         this.listeners.delete(topicsSubscriber);
       }

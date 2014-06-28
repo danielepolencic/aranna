@@ -74,4 +74,15 @@ describe('Observer', function () {
     done();
   });
 
+  it('should unsubscribe from all listeners', function (done) {
+    var listener = function () {
+      done('should not have been called');
+    };
+    observer.subscribe('topic')(listener);
+    observer.subscribe('topic')(function () { listener(); });
+    observer.unsubscribe('topic')();
+    observer.publish('topic')();
+    done();
+  });
+
 });
