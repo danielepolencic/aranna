@@ -41,3 +41,7 @@ Entity.prototype.offComponentRemoved = function () {
   var topics = util.toArray(arguments);
   return Observer.prototype.unsubscribe.apply(this, ['#remove'].concat(topics));
 };
+
+Entity.prototype.isEmpty = function () {
+  return !ComponentCollection.prototype.size.call(this);
+};

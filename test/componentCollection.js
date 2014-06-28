@@ -31,4 +31,10 @@ describe('Component Collection', function () {
     ));
   });
 
+  it('should return the size of the collection', function () {
+    componentCollection.add({name: 'position', id: 1});
+    componentCollection.add({name: 'velocity', id: 2});
+    assert.equal(componentCollection.size(), 2);
+  });
+
 });

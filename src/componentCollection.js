@@ -24,3 +24,7 @@ ComponentCollection.prototype.keys = function () {
   });
   return keys;
 };
+
+ComponentCollection.prototype.size = function () {
+  return this.components.size;
+};

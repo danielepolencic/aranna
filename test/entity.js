@@ -45,4 +45,13 @@ describe('Entity', function () {
     done();
   });
 
+  it('should be empty', function () {
+    assert.ok(entity.isEmpty());
+  });
+
+  it('should not be empty', function () {
+    entity.addComponent({name: 'position'});
+    assert.ok(!entity.isEmpty());
+  });
+
 });
