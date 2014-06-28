@@ -42,6 +42,10 @@ Entity.prototype.offComponentRemoved = function () {
   return Observer.prototype.unsubscribe.apply(this, ['#remove'].concat(topics));
 };
 
+Entity.prototype.componentNames = function () {
+  return ComponentCollection.prototype.keys.call(this);
+};
+
 Entity.prototype.isEmpty = function () {
   return !ComponentCollection.prototype.size.call(this);
 };

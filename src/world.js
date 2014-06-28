@@ -1,38 +1,79 @@
-var observer = require('./observer')
-  , world = require('./worldHelpers')
+var Observer = require('./observer')
+  , ComponentCollection = require('./componentCollection')
+  , EntityCollection = require('./entityCollection')
   , util = require('./util');
 
 module.exports = World;
 
-function World () {}
+function World () {
+  EntityCollection.call(this);
+  Observer.call(this);
+}
 
-var entities = new Map()
-  , systems = new Map()
-  , listeners = {
-      entityAdded: new Map(),
-      entityRemoved: new Map()
-    };
+World.prototype.addEntity = util.parallel(
+  EntityCollection.prototype.add,
 
-World.prototype.addEntity = util.pipeline(
-  world.addEntityTo(entities),
-  observer.notify(listeners['entityAdded'])
+  function (entity) {
+    entity.onComponentAdded()(function (component, entity) {
+      Observer.prototype.publish
+      .apply(this, ['component#added'].concat(entity.componentNames()))
+      .call(this, entity, component)
+    }.bind(this));
+
+    entity.onComponentRemoved()(function (component, entity) {
+      Observer.prototype.publish
+      .apply(
+        this,
+        ['component#removed']
+          .concat(entity.componentNames())
+          .concat(component.name)
+      )
+      .call(this, entity, component)
+    }.bind(this));
+  },
+
+  function (entity) {
+    Observer.prototype.publish
+    .apply(this, ['entity#added'].concat(entity.componentNames()))
+    .call(this, entity)
+  }
 );
 
-World.prototype.removeEntity = util.pipeline(
-  world.removeEntityFrom(entities),
-  observer.notify(listeners['entityRemoved'])
+World.prototype.removeEntity = util.parallel(
+  EntityCollection.prototype.remove,
+
+  function (entity) {
+    entity.offComponentAdded()();
+    entity.offComponentRemoved()();
+  },
+
+  function (entity) {
+    Observer.prototype.publish
+    .apply(this, ['entity#removed'].concat(entity.componentNames()))
+    .call(this, entity)
+  }
 );
 
-World.prototype.entityAdded = observer.register(listeners['entityAdded']);
-World.prototype.entityRemoved = observer.register(listeners['entityRemoved']);
+World.prototype.onEntityAdded = function () {
+  var topics = util.toArray(arguments);
+  return Observer.prototype.subscribe
+    .apply(this, ['entity#added'].concat(topics))
+};
 
-World.prototype.addSystem = util.pipeline(
-  world.addSystemTo(systems),
-  util.invoke('addedToWorld')
-);
-World.prototype.removeSystem = util.pipeline(
-  world.removeSystemFrom(systems),
-  util.invoke('removedFromWorld')
-);
+World.prototype.onEntityRemoved = function () {
+  var topics = util.toArray(arguments);
+  return Observer.prototype.subscribe
+    .apply(this, ['entity#removed'].concat(topics))
+};
 
-World.prototype.update = world.update(systems);
+World.prototype.onComponentAddedToEntity = function () {
+  var topics = util.toArray(arguments);
+  return Observer.prototype.subscribe
+    .apply(this, ['component#added'].concat(topics))
+};
+
+World.prototype.onComponentRemovedFromEntity = function () {
+  var topics = util.toArray(arguments);
+  return Observer.prototype.subscribe
+    .apply(this, ['component#removed'].concat(topics))
+};
