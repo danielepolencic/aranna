@@ -8,10 +8,13 @@ function ComponentCollection () {
 
 ComponentCollection.prototype.add = function (component) {
   this.components.set(component.name, component);
+  return component;
 };
 
 ComponentCollection.prototype.remove = function (component) {
-  return this.components.delete(util.isString(component) ? component : component.name);
+  component = util.isString(component) ? this.components.get(component) : component;
+  this.components.delete(component.name);
+  return component;
 };
 
 ComponentCollection.prototype.keys = function () {
