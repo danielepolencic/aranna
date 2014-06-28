@@ -102,28 +102,28 @@ function MySystem () {}
 
 MySystem.prototype.addedToWorld = function (world)  {
 
-  world.entityAdded('position', 'velocity')(function (entity) {
+  world.onEntityAdded('position', 'velocity')(function (entity) {
     /*
       This function is called whenever an entity with both 'position' and
       'velocity' components is added to the world.
     */
   });
 
-  world.entityRemoved('position', 'velocity')(function (entity) {
+  world.onEntityRemoved('position', 'velocity')(function (entity) {
     /*
        This function is called whenever an entity with both 'position' and
        'velocity' components is removed from the world.
      */
   });
 
-  world.componentAdded('position', 'velocity')(function (entity) {
+  world.onComponentAddedToEntity('position', 'velocity')(function (entity) {
     /*
        This function is called whenever a component is added to an entity; for
        example, when an entity with only 'position' has 'velocity' added to it.
      */
   });
 
-  world.componentRemoved('position', 'velocity')(function (entity) {
+  world.onComponentRemovedFromEntity('position', 'velocity')(function (entity) {
     /*
        This function is called whenever a component is removed to an entity; for
        example, when an entity with both 'position' and 'velocity' has
