@@ -204,6 +204,33 @@ describe('World', function () {
     done();
   });
 
+  it('should add a system', function (done) {
+    var system = {addedToWorld: function (worldClone) {
+      assert.deepEqual(worldClone, world);
+      done();
+    }}
+    world.addSystem(system);
+  });
+
+  it('should remove a system', function (done) {
+    var system = {removeFromWorld: function (worldClone) {
+      assert.deepEqual(worldClone, world);
+      done();
+    }}
+    world.addSystem(system);
+    world.removeSystem(system);
+  });
+
+  it('should update a system', function (done) {
+    var system = {update: function (worldClone, message) {
+      assert.deepEqual(worldClone, world);
+      assert.equal(message, 'Hello World');
+      done();
+    }}
+    world.addSystem(system);
+    world.update('Hello World');
+  });
+
 });
 
 function after (times, func) {

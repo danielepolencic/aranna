@@ -1,13 +1,14 @@
 var Observer = require('./observer')
-  , ComponentCollection = require('./componentCollection')
   , EntityCollection = require('./entityCollection')
+  , SystemCollection = require('./systemCollection')
   , util = require('./util');
 
 module.exports = World;
 
 function World () {
-  EntityCollection.call(this);
   Observer.call(this);
+  EntityCollection.call(this);
+  SystemCollection.call(this);
 }
 
 World.prototype.addEntity = util.parallel(
@@ -76,4 +77,21 @@ World.prototype.onComponentRemovedFromEntity = function () {
   var topics = util.toArray(arguments);
   return Observer.prototype.subscribe
     .apply(this, ['component#removed'].concat(topics))
+};
+
+World.prototype.addSystem = function (system) {
+  SystemCollection.prototype.add.call(this, system);
+  if (system.addedToWorld) system.addedToWorld.call(this, this);
+};
+
+World.prototype.removeSystem = function (system) {
+  SystemCollection.prototype.remove.call(this, system);
+  if (system.removeFromWorld) system.removeFromWorld.call(this, this);
+};
+
+World.prototype.update = function () {
+  var args = util.toArray(arguments);
+  SystemCollection.prototype.forEach.call(this, function (system) {
+    if (system.update) system.update.apply(this, [this].concat(args));
+  }, this);
 };
