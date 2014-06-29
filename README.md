@@ -1,5 +1,5 @@
-# Entity Component System
-ECS is a lightweight dependency-free [Entity Component
+# Aranna
+Aranna is a lightweight dependency-free [Entity Component
 System](http://en.wikipedia.org/wiki/Entity_component_system) written in
 JavaScript inspired by [ces.js](https://github.com/qiao/ces.js).
 
