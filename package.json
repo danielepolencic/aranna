@@ -7,7 +7,7 @@
     "test": "test"
   },
   "scripts": {
-    "test": "mocha test/"
+    "test": "mocha test"
   },
   "author": "Daniele Polencic <daniele.polencic@gmail.com>",
   "license": "MITISC",

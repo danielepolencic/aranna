@@ -1,4 +1,4 @@
-# Aranna
+# Aranna [![Build Status](https://travis-ci.org/danielepolencic/aranna.svg)](https://travis-ci.org/danielepolencic/aranna)
 Aranna is a lightweight dependency-free [Entity Component
 System](http://en.wikipedia.org/wiki/Entity_component_system) written in
 JavaScript inspired by [ces.js](https://github.com/qiao/ces.js).
