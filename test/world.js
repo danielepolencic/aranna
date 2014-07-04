@@ -16,7 +16,7 @@ describe('World', function () {
     entity.addComponent({name: 'position'});
     world.onEntityAdded('position')(function (entityClone) {
       assert.deepEqual(entity, entityClone);
-      assert.ok(world.entities.get('position').has(entity));
+      assert.ok(world.hasEntities(entity));
       done();
     });
     world.addEntity(entity);
@@ -28,7 +28,7 @@ describe('World', function () {
       done('should not have been called');
     });
     world.addEntity(entity);
-    assert.ok(world.entities.get('position').has(entity));
+    assert.ok(world.hasEntities(entity));
     done();
   });
 
@@ -37,8 +37,7 @@ describe('World', function () {
     entity.addComponent({name: 'velocity'});
     world.onEntityAdded('velocity')(function (entityClone) {
       assert.deepEqual(entity, entityClone);
-      assert.ok(world.entities.get('position').has(entity));
-      assert.ok(world.entities.get('velocity').has(entity));
+      assert.ok(world.hasEntities(entity));
       done();
     });
     world.addEntity(entity);
@@ -48,7 +47,7 @@ describe('World', function () {
     entity.addComponent({name: 'position'});
     world.onEntityRemoved('position')(function (entityClone) {
       assert.deepEqual(entity, entityClone);
-      assert.ok(!world.entities.get('position').has(entity));
+      assert.ok(!world.hasEntities(entity));
       done();
     });
     world.addEntity(entity);
@@ -62,7 +61,7 @@ describe('World', function () {
     });
     world.addEntity(entity);
     world.removeEntity(entity);
-    assert.ok(!world.entities.get('position').has(entity));
+    assert.ok(!world.hasEntities(entity));
     done();
   });
 
@@ -71,7 +70,7 @@ describe('World', function () {
     entity.addComponent({name: 'velocity'})
     world.onEntityRemoved('position')(function (entityClone) {
       assert.deepEqual(entity, entityClone);
-      assert.ok(!world.entities.get('position').has(entity));
+      assert.ok(!world.hasEntities(entity));
       done();
     });
     world.addEntity(entity);

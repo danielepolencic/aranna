@@ -54,4 +54,16 @@ describe('Entity', function () {
     assert.ok(!entity.isEmpty());
   });
 
+  it('should have components', function () {
+    entity.addComponent({name: 'position'});
+    assert.ok(entity.has('position'));
+    entity.addComponent({name: 'velocity'});
+    assert.ok(entity.has('position', 'velocity'));
+  });
+
+  it('should not have components', function () {
+    entity.addComponent({name: 'position'});
+    assert.ok(!entity.has('velocity'));
+  });
+
 });

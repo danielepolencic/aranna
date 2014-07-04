@@ -49,3 +49,8 @@ Entity.prototype.componentNames = function () {
 Entity.prototype.isEmpty = function () {
   return !ComponentCollection.prototype.size.call(this);
 };
+
+Entity.prototype.has = function () {
+  var components = util.toArray(arguments);
+  return util.isArrayContained(ComponentCollection.prototype.keys.call(this), components);
+};

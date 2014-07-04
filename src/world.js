@@ -95,3 +95,11 @@ World.prototype.update = function () {
     if (system.update) system.update.apply(this, [this].concat(args));
   }, this);
 };
+
+World.prototype.getEntities = function () {
+  var topics = util.toArray(arguments);
+};
+
+World.prototype.hasEntities = function () {
+  return EntityCollection.prototype.has.apply(this, arguments);
+};
