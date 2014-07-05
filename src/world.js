@@ -17,7 +17,7 @@ World.prototype.addEntity = util.parallel(
   function (entity) {
     entity.onComponentAdded()(function (component, entity) {
       Observer.prototype.publish
-      .apply(this, ['component#added'].concat(entity.componentNames()))
+      .apply(this, ['world#component#added'].concat(entity.componentNames()))
       .call(this, entity, component)
     }.bind(this));
 
@@ -25,7 +25,7 @@ World.prototype.addEntity = util.parallel(
       Observer.prototype.publish
       .apply(
         this,
-        ['component#removed']
+        ['world#component#removed']
           .concat(entity.componentNames())
           .concat(component.name)
       )
@@ -35,7 +35,7 @@ World.prototype.addEntity = util.parallel(
 
   function (entity) {
     Observer.prototype.publish
-    .apply(this, ['entity#added'].concat(entity.componentNames()))
+    .apply(this, ['world#entity#added'].concat(entity.componentNames()))
     .call(this, entity)
   }
 );
@@ -50,7 +50,7 @@ World.prototype.removeEntity = util.parallel(
 
   function (entity) {
     Observer.prototype.publish
-    .apply(this, ['entity#removed'].concat(entity.componentNames()))
+    .apply(this, ['world#entity#removed'].concat(entity.componentNames()))
     .call(this, entity)
   }
 );
@@ -58,25 +58,25 @@ World.prototype.removeEntity = util.parallel(
 World.prototype.onEntityAdded = function () {
   var topics = util.toArray(arguments);
   return Observer.prototype.subscribe
-    .apply(this, ['entity#added'].concat(topics))
+    .apply(this, ['world#entity#added'].concat(topics))
 };
 
 World.prototype.onEntityRemoved = function () {
   var topics = util.toArray(arguments);
   return Observer.prototype.subscribe
-    .apply(this, ['entity#removed'].concat(topics))
+    .apply(this, ['world#entity#removed'].concat(topics))
 };
 
 World.prototype.onComponentAddedToEntity = function () {
   var topics = util.toArray(arguments);
   return Observer.prototype.subscribe
-    .apply(this, ['component#added'].concat(topics))
+    .apply(this, ['world#component#added'].concat(topics))
 };
 
 World.prototype.onComponentRemovedFromEntity = function () {
   var topics = util.toArray(arguments);
   return Observer.prototype.subscribe
-    .apply(this, ['component#removed'].concat(topics))
+    .apply(this, ['world#component#removed'].concat(topics))
 };
 
 World.prototype.addSystem = function (system) {
@@ -97,7 +97,7 @@ World.prototype.update = function () {
 };
 
 World.prototype.getEntities = function () {
-  var topics = util.toArray(arguments);
+  return EntityCollection.prototype.query.apply(this, arguments);
 };
 
 World.prototype.hasEntities = function () {

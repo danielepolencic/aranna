@@ -7,7 +7,7 @@ function Observer () {
 };
 
 Observer.prototype.publish = function () {
-  topicsPublisher = util.toArray(arguments);
+  var topicsPublisher = util.toArray(arguments);
 
   return function () {
     var args = util.toArray(arguments);

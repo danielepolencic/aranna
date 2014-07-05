@@ -68,4 +68,48 @@ describe('Entity Collection', function () {
     assert.ok(!entityCollection.has(anotherEntity));
   });
 
+  it('should query when there are no components', function () {
+    assert.ok(!entityCollection.query('position').has(entity));
+  });
+
+  it('should query even after a component is added', function () {
+    entityCollection.add(entity);
+    assert.ok(!entityCollection.query('position').has(entity));
+    entity.addComponent({name: 'position'});
+    assert.ok(entityCollection.query('position').has(entity));
+  });
+
+  it('should query even after an entity is added', function () {
+    entity.addComponent({name: 'position'});
+    var anotherEntity = new Entity();
+    entityCollection.add(entity);
+    assert.ok(entityCollection.query('position').has(entity));
+    assert.ok(!entityCollection.query('position').has(anotherEntity));
+    anotherEntity.addComponent({name: 'position'});
+    entityCollection.add(anotherEntity);
+    assert.ok(entityCollection.query('position').has(entity));
+    assert.ok(entityCollection.query('position').has(anotherEntity));
+  });
+
+  it('should query even after a component is removed', function () {
+    var anotherEntity = new Entity();
+    entity.addComponent({name: 'position'});
+    anotherEntity.addComponent({name: 'position'});
+    entityCollection.add(entity);
+    entityCollection.add(anotherEntity);
+    assert.ok(entityCollection.query('position').has(entity));
+    assert.ok(entityCollection.query('position').has(anotherEntity));
+    entity.removeComponent('position');
+    assert.ok(!entityCollection.query('position').has(entity));
+    assert.ok(entityCollection.query('position').has(anotherEntity));
+  });
+
+  it('should query even after an entity is removed', function () {
+    entity.addComponent({name: 'position'});
+    entityCollection.add(entity);
+    assert.ok(entityCollection.query('position').has(entity));
+    entityCollection.remove(entity);
+    assert.ok(!entityCollection.query('position').has(entity));
+  });
+
 });
