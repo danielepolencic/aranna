@@ -53,3 +53,7 @@ Entity.prototype.has = function () {
   var components = util.toArray(arguments);
   return util.isArrayContained(ComponentCollection.prototype.keys.call(this), components);
 };
+
+Entity.prototype.getComponent = function (componentName) {
+  return ComponentCollection.prototype.get.call(this, componentName);
+};

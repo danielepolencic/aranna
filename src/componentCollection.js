@@ -25,6 +25,11 @@ ComponentCollection.prototype.keys = function () {
   return keys;
 };
 
+ComponentCollection.prototype.get = function (component) {
+  component = util.isString(component) ? component : component.name;
+  return this.components.has(component) ? this.components.get(component) : false;
+};
+
 ComponentCollection.prototype.size = function () {
   return this.components.size;
 };
