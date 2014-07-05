@@ -6,6 +6,7 @@
   "directories": {
     "test": "test"
   },
+  "keywords": ["component", "entity", "system", "ecs"],
   "scripts": {
     "test": "mocha test"
   },
