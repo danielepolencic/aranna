@@ -1,5 +1,3 @@
-require('es6-shim');
-
 var assert = require('assert')
   , util = require('./../src/util')
   , SystemCollection = require('./../src/systemCollection');

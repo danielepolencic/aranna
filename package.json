@@ -12,9 +12,12 @@
   "author": "Daniele Polencic <daniele.polencic@gmail.com>",
   "license": "MITISC",
   "dependencies": {
-    "es6-shim": "^0.13.0"
+    "es6-shim": "^0.13.0",
+    "collections": "^1.2.1"
   },
   "devDependencies": {
-    "mocha": "^1.20.1"
+    "mocha": "^1.20.1",
+    "benchmark": "^1.0.0",
+    "makrjs": "^0.1.1-snapshot"
   }
 }

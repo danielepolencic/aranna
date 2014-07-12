@@ -1,5 +1,3 @@
-require('es6-shim');
-
 var assert = require('assert')
   , Observer = require('./../src/observer');
 
@@ -15,7 +13,7 @@ describe('Observer', function () {
       done();
     };
     observer.subscribe('topic')(listener);
-    assert.ok(observer.listeners.size);
+    assert.ok(observer.listeners.toArray().length);
     observer.publish('topic')();
   });
 

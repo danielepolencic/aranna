@@ -1,4 +1,6 @@
 var util = require('./util')
+  , Map = require('collections/map')
+  , Set = require('collections/set')
   , Observer = require('./observer');
 
 module.exports = EntityCollection;

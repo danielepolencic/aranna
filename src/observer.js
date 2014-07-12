@@ -1,4 +1,5 @@
-var util = require('./util');
+var util = require('./util')
+  , Map = require('collections/map');
 
 module.exports = Observer;
 

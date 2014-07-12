@@ -1,4 +1,5 @@
-var util = require('./util');
+var util = require('./util')
+  , Map = require('collections/map');
 
 module.exports = ComponentCollection;
 
@@ -31,5 +32,5 @@ ComponentCollection.prototype.get = function (component) {
 };
 
 ComponentCollection.prototype.size = function () {
-  return this.components.size;
+  return this.components.toArray().length;
 };

@@ -1,4 +1,5 @@
-var util = require('./util');
+var util = require('./util')
+  , Set = require('collections/set');
 
 module.exports = SystemCollection;
 

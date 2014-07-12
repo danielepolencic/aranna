@@ -1,5 +1,3 @@
-require('es6-shim');
-
 var assert = require('assert')
   , util = require('./../src/util')
   , Entity = require('./../src/entity')
@@ -15,14 +13,14 @@ describe('Entity Collection', function () {
 
   it('should add an entity', function () {
     entityCollection.add(entity);
-    assert.equal(entityCollection.entities.size, 1);
+    assert.equal(entityCollection.entities.toArray().length, 1);
     assert.ok(entityCollection.entities.has(entity));
   });
 
   it('should remove an entity', function () {
     entityCollection.add(entity);
     entityCollection.remove(entity);
-    assert.equal(entityCollection.entities.size, 0);
+    assert.equal(entityCollection.entities.toArray().length, 0);
     assert.ok(!entityCollection.entities.has(entity));
   });
 

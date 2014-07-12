@@ -1,5 +1,3 @@
-require('es6-shim');
-
 var assert = require('assert')
   , Entity = require('./../src/entity');
 
