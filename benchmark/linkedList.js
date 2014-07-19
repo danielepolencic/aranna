@@ -1,5 +1,6 @@
 var Benchmark = require('benchmark')
   , LinkedList = require('./../src/linkedList')
+  , Deque = require('./../src/deque')
   , LinkedListBuiltIn = Array;
 
 function printPlatform () {
@@ -23,12 +24,14 @@ function printPlatform () {
 
 var linkedList = new LinkedList();
 var linkedListBuiltIn = new LinkedListBuiltIn();
+var deque = new Deque();
 
 var l = 2 * 1000 * 1000;
 
 while (--l) {
   linkedList.add(l);
   linkedListBuiltIn.push(l);
+  deque.on(l);
 }
 
 linkedList.iterator();
@@ -36,6 +39,15 @@ linkedList.iterator();
 var suite = new Benchmark.Suite();
 
 suite
+.add('deque', function () {
+  deque.off();
+  deque.off();
+  deque.off();
+
+  deque.on(1);
+  deque.on(2);
+  deque.on(3);
+})
 .add('linked list', function () {
   linkedList.remove();
   linkedList.remove();

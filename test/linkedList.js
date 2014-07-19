@@ -5,15 +5,15 @@ describe.only('LinkedList', function () {
 
   describe('LinkedList.prototype.constructor', function () {
 
-    // it('should take no argument', function () {
-    //   var a = new LinkedList();
-    //   assert(a._capacity === 16);
-    // });
+    it('should take no argument', function () {
+      var a = new LinkedList();
+      assert(a._capacity === 16);
+    });
 
-    // it('should take a capacity argument', function () {
-    //   var a = new LinkedList(32);
-    //   assert(a._capacity === 32);
-    // });
+    it('should take a capacity argument', function () {
+      var a = new LinkedList(32);
+      assert(a._capacity === 32);
+    });
 
   });
 
@@ -42,37 +42,37 @@ describe.only('LinkedList', function () {
       assert.deepEqual(a.toArray(), [0, 1, 2, 3, 4, 1]);
     });
 
-    // it('should add single argument - exact capacity', function () {
-    //   var a = new LinkedList();
-    //   for (var i = 0; i < 15; i++) {
-    //     a.add(i);
-    //   }
-    //   assert(a._capacity - a.length === 1);
-    //   var before = a.length;
-    //   var ret = a.add(1);
-    //   assert(ret === before + 1);
-    //   assert(a.length === ret);
-    //   assert(ret === 16);
-    //   assert.deepEqual(
-    //     a.toArray(), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 1]
-    //   );
-    // });
+    it('should add single argument - exact capacity', function () {
+      var a = new LinkedList();
+      for (var i = 0; i < 15; i++) {
+        a.add(i);
+      }
+      assert(a._capacity - a.length === 1);
+      var before = a.length;
+      var ret = a.add(1);
+      assert(ret === before + 1);
+      assert(a.length === ret);
+      assert(ret === 16);
+      assert.deepEqual(
+        a.toArray(), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 1]
+      );
+    });
 
-    // it('should add single argument - over capacity', function () {
-    //   var a = new LinkedList();
-    //   for (var i = 0; i < 16; i++) {
-    //     a.add(i);
-    //   }
-    //   assert(a._capacity - a.length === 0);
-    //   var before = a.length;
-    //   var ret = a.add(1);
-    //   assert(ret === before + 1);
-    //   assert(a.length === ret);
-    //   assert(ret === 17);
-    //   assert.deepEqual(
-    //     a.toArray(), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 1]
-    //   );
-    // });
+    it('should add single argument - over capacity', function () {
+      var a = new LinkedList();
+      for (var i = 0; i < 16; i++) {
+        a.add(i);
+      }
+      assert(a._capacity - a.length === 0);
+      var before = a.length;
+      var ret = a.add(1);
+      assert(ret === before + 1);
+      assert(a.length === ret);
+      assert(ret === 17);
+      assert.deepEqual(
+        a.toArray(), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 1]
+      );
+    });
 
   });
 
@@ -129,6 +129,7 @@ describe.only('LinkedList', function () {
     it('should return undefined when empty list', function () {
       var a = new LinkedList();
       assert(a.length === 0);
+      console.log('re: ', a.remove())
       assert(a.remove() === void 0);
       assert(a.length === 0);
     });
