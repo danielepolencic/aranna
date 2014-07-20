@@ -31,7 +31,7 @@ var l = 2 * 1000 * 1000;
 while (--l) {
   linkedList.add(l);
   linkedListBuiltIn.push(l);
-  deque.on(l);
+  deque.add(l);
 }
 
 linkedList.iterator();
@@ -40,13 +40,13 @@ var suite = new Benchmark.Suite();
 
 suite
 .add('deque', function () {
-  deque.off();
-  deque.off();
-  deque.off();
+  deque.remove();
+  deque.remove();
+  deque.remove();
 
-  deque.on(1);
-  deque.on(2);
-  deque.on(3);
+  deque.add(1);
+  deque.add(2);
+  deque.add(3);
 })
 .add('linked list', function () {
   linkedList.remove();

@@ -2,12 +2,16 @@ var LinkedList = require('./../src/linkedList')
   , assert = require('assert');
 
 describe.only('LinkedList', function () {
+  var list;
+
+  beforeEach(function () {
+    list = new LinkedList();
+  });
 
   describe('LinkedList.prototype.constructor', function () {
 
     it('should take no argument', function () {
-      var a = new LinkedList();
-      assert(a._capacity === 16);
+      assert(list._capacity === 16);
     });
 
     it('should take a capacity argument', function () {
@@ -20,73 +24,64 @@ describe.only('LinkedList', function () {
   describe('LinkedList.prototype.add', function () {
 
     it('should do nothing if no arguments', function () {
-      var a = new LinkedList();
-      var before = a.length;
-      var ret = a.add();
-      assert(ret === before);
-      assert(a.length === ret);
-      assert(ret === 0);
+      var before = list.length;
+      var ret = list.add();
+      assert.equal(ret, before);
+      assert.equal(list.length, ret);
+      assert.equal(ret, 0);
     });
 
     it('should add single argument - plenty of capacity', function () {
-      var a = new LinkedList();
       for (var i = 0; i < 5; i++) {
-        a.add(i);
+        list.add(i);
       }
-      // assert(a._capacity - a.length > 1);
-      var before = a.length;
-      var ret = a.add(1);
-      assert(ret === before + 1);
-      assert(a.length === ret);
-      assert(ret === 6);
-      assert.deepEqual(a.toArray(), [0, 1, 2, 3, 4, 1]);
+      assert(list._capacity - list.length > 1);
+      var before = list.length;
+      var ret = list.add(1);
+      assert.equal(ret, before + 1);
+      assert.equal(list.length, ret);
+      assert.equal(ret, 6);
+      assert.deepEqual(list.toArray(), [0, 1, 2, 3, 4, 1]);
     });
 
     it('should add single argument - exact capacity', function () {
-      var a = new LinkedList();
       for (var i = 0; i < 15; i++) {
-        a.add(i);
+        list.add(i);
       }
-      assert(a._capacity - a.length === 1);
-      var before = a.length;
-      var ret = a.add(1);
-      assert(ret === before + 1);
-      assert(a.length === ret);
-      assert(ret === 16);
+      assert.equal(list._capacity - list.length, 1);
+      var before = list.length;
+      var ret = list.add(1);
+      assert.equal(ret, before + 1);
+      assert.equal(list.length, ret);
+      assert.equal(ret, 16);
       assert.deepEqual(
-        a.toArray(), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 1]
+        list.toArray(), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 1]
       );
     });
 
     it('should add single argument - over capacity', function () {
-      var a = new LinkedList();
       for (var i = 0; i < 16; i++) {
-        a.add(i);
+        list.add(i);
       }
-      assert(a._capacity - a.length === 0);
-      var before = a.length;
-      var ret = a.add(1);
-      assert(ret === before + 1);
-      assert(a.length === ret);
-      assert(ret === 17);
+      assert(list._capacity - list.length === 0);
+      var before = list.length;
+      var ret = list.add(1);
+      assert.equal(ret, before + 1);
+      assert.equal(list.length, ret);
+      assert.equal(ret, 17);
       assert.deepEqual(
-        a.toArray(), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 1]
+        list.toArray(), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 1]
       );
     });
 
   });
 
   describe('Iterator', function () {
-    var list;
-
-    beforeEach(function () {
-      list = new LinkedList();
-    });
 
     it('should return undefined when empty list', function () {
       list.iterator();
-      assert(list.length === 0);
-      assert(!list.hasNext());
+      assert.equal(list.length, 0);
+      assert(list.isEmpty());
     });
 
     it('should return the head and subsequent items', function () {
@@ -94,20 +89,19 @@ describe.only('LinkedList', function () {
         list.add(i);
       }
       list.iterator();
-      assert(list.length === 10);
-      assert(list.next() === list._head.data);
+      assert.equal(list.length, 10);
       for (var i = 1; i < 10; i++) {
-        assert(list.next() === i);
+        assert.equal(list.next(), i);
       }
     });
 
-    it('should return undefined when the list is over', function () {
+    it('should start over when the list ends', function () {
       list.add(1);
       list.add(2);
-      list.iterator();
+      assert.equal(list.iterator(), 1);
+      assert.equal(list.next(), 2);
       list.next();
-      list.next();
-      assert(!list.hasNext());
+      assert.equal(list.next(), 2);
     });
 
     it('should not iterate through a removed item', function () {
@@ -116,9 +110,8 @@ describe.only('LinkedList', function () {
       list.add(3);
       list.iterator();
       list.next();
-      list.next();
       list.remove();
-      assert(list.next() === 3);
+      assert.equal(list.next(), 3);
       assert.deepEqual(list.toArray(), [1, 3]);
     });
 
@@ -127,41 +120,49 @@ describe.only('LinkedList', function () {
   describe('LinkedList.prototype.remove', function () {
 
     it('should return undefined when empty list', function () {
-      var a = new LinkedList();
-      assert(a.length === 0);
-      console.log('re: ', a.remove())
-      assert(a.remove() === void 0);
-      assert(a.length === 0);
+      assert(list.length === 0);
+      assert(list.remove() === void 0);
+      assert(list.length === 0);
     });
 
     it('should return the item at the index', function () {
-      var a = new LinkedList();
       var b = new Array();
 
       for (var i = 0; i < 8; i++) {
-        a.add(i);
+        list.add(i);
         b.push(i);
       }
 
-      a.iterator();
-      assert(a.remove() === 0);
-      assert(a.remove() === 1);
-      b.shift(); b.shift();
-      assert.deepEqual(a.toArray(), b);
-      a.add(1);
+      list.iterator();
+      assert.equal(list.remove(), 0);
+      b.shift();
+      assert.deepEqual(list.toArray(), b);
+      list.next();
+      assert.equal(list.remove(), 1);
+      b.shift();
+      assert.deepEqual(list.toArray(), b);
+      list.add(1);
       b.push(1);
-      assert.deepEqual(a.toArray(), b);
+      assert.deepEqual(list.toArray(), b);
     });
 
     it('should remove the tail', function () {
-      var a = new LinkedList();
-      a.add(1);
-      a.add(2);
-      a.iterator();
-      assert(a.remove() === 1);
-      assert(a.remove() === 2);
-      a.add(3);
-      assert.deepEqual(a.toArray(), [3]);
+      list.add(1);
+      list.add(2);
+      list.iterator();
+      assert.equal(list.remove(), 1);
+      assert.equal(list.remove(), 2);
+      list.add(3);
+      assert.deepEqual(list.toArray(), [3]);
+    });
+
+    it('should remove and start over', function () {
+      list.add(1);
+      list.add(2);
+      list.iterator();
+      list.next();
+      list.remove();
+      assert.equal(list.next(), 1);
     });
 
   });

@@ -8,6 +8,7 @@ function LinkedList (capacity) {
   this._head = this[0];
   this._tail = this[0];
   this._current = this[0];
+  this._last = this[0];
 }
 
 LinkedList.prototype._makeCapacity = function LinkedList$_makeCapacity () {
@@ -40,9 +41,16 @@ LinkedList.prototype.add = function LinkedList$add (item) {
   node.data = item;
 
   if (this.length !== 0) {
-    this._tail.next = node;
-    node.prev = this._tail;
-    this._tail = node;
+    var previous = this._last;
+    var next = this._last.next;
+    node.prev = previous;
+    node.next = next;
+    previous.next = node;
+    next.prev = node;
+    this._last = node;
+  } else {
+    node.prev = node;
+    node.next = node;
   }
 
   this.length = length + 1;
@@ -51,17 +59,17 @@ LinkedList.prototype.add = function LinkedList$add (item) {
 };
 
 LinkedList.prototype.iterator = function LinkedList$iterator () {
-  this._current = this._head;
+  this._current = this._last.next;
+  return (this.length === 0) ? void 0 : this._current.data;
 };
 
-LinkedList.prototype.hasNext = function LinkedList$hasNext () {
-  return this.length && this._current !== void 0;
+LinkedList.prototype.isEmpty = function LinkedList$hasNext () {
+  return this.length === 0;
 };
 
 LinkedList.prototype.next = function LinkedList$next () {
-  var current = this._current;
-  this._current = current.next;
-  return current.data;
+  this._current = this._current.next;
+  return this._current.data;
 };
 
 LinkedList.prototype.remove = function LinkedList$remove () {
@@ -73,23 +81,19 @@ LinkedList.prototype.remove = function LinkedList$remove () {
   var current = this._current;
   var output = current.data;
 
-  if ((length - 1) === 0) return output;
-
-  if (current === this._head) {
-    this._swap(current.index, length - 1);
-    this._head = current.next;
-    current.next.prev = void 0;
-    current.next = void 0;
-    this._current = this._head;
-  } else {
+  if ((length - 1) !== 0) {
     var previous = current.prev;
-    this._swap(previous.index, length - 1);
-    current.prev = previous.prev;
-    previous.prev.next = current;
-    output = previous.data;
+    var next = current.next;
+
+    this._swap(current.index, length - 1);
+
+    previous.next = current.next;
+    next.prev = current.prev;
+
+    this._current = previous;
   }
 
-  return output;
+  return current.data;
 };
 
 LinkedList.prototype._swap = function LinkedList$_swap (indexA, indexB) {
@@ -104,9 +108,9 @@ LinkedList.prototype._swap = function LinkedList$_swap (indexA, indexB) {
 
 LinkedList.prototype.toArray = function () {
   var result = [],
-  current = this._head;
+  current = this._last.next;
 
-  while (current) {
+  for (var i = 0, len = this.length; i < len; i++) {
     result.push(current.data);
     current = current.next;
   }
@@ -115,7 +119,7 @@ LinkedList.prototype.toArray = function () {
 };
 
 function getCapacity (capacity) {
-  if (typeof capacity !== 'number') return 16;
+  if (capacity !== (capacity | 0)) return 16;
   return pow2AtLeast(
     Math.min(
       Math.max(16, capacity), 1073741824)
