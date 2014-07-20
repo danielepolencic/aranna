@@ -44,7 +44,7 @@ Deque.prototype.toArray = function Deque$toArray () {
   return ret;
 };
 
-Deque.prototype.on = function Deque$queue (item) {
+Deque.prototype.add = function Deque$queue (item) {
   var argsLength = arguments.length;
   var length = this.length;
 
@@ -60,7 +60,7 @@ Deque.prototype.on = function Deque$queue (item) {
   return length + 1;
 };
 
-Deque.prototype.off = function Deque$dequeue () {
+Deque.prototype.remove = function Deque$dequeue () {
   var length = this.length;
   if (length === 0) return void 0;
   var front = this._front;
@@ -89,7 +89,7 @@ function pow2AtLeast (n) {
 }
 
 function getCapacity (capacity) {
-  if (typeof capacity !== 'number') return 16;
+  if (capacity !== (capacity | 0)) return 16;
   return pow2AtLeast(
     Math.min(
       Math.max(16, capacity), 1073741824)

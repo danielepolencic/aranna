@@ -27,7 +27,7 @@ var dequeBuiltIn = new DequeBuiltIn();
 var l = 2 * 1000 * 1000;
 
 while (--l) {
-  deque.on(l);
+  deque.add(l);
   dequeBuiltIn.push(l);
 }
 
@@ -35,13 +35,13 @@ var suite = new Benchmark.Suite();
 
 suite
 .add('double-ended-queue', function () {
-  var a = deque.off();
-  var b = deque.off();
-  var c = deque.off();
+  var a = deque.remove();
+  var b = deque.remove();
+  var c = deque.remove();
 
-  deque.on(a);
-  deque.on(b);
-  deque.on(c);
+  deque.add(a);
+  deque.add(b);
+  deque.add(c);
 })
 .add('built-in array', function () {
   var a = dequeBuiltIn.shift();

@@ -17,12 +17,12 @@ describe('Deque', function () {
 
   });
 
-  describe('Deque.prototype.on', function () {
+  describe('Deque.prototype.add', function () {
 
     it('should do nothing if no arguments', function () {
       var a = new Deque();
       var before = a.length;
-      var ret = a.on();
+      var ret = a.add();
       assert(ret === before);
       assert(a.length === ret);
       assert(ret === 0);
@@ -31,11 +31,11 @@ describe('Deque', function () {
     it('should add single argument - plenty of capacity', function () {
       var a = new Deque();
       for (var i = 0; i < 5; i++) {
-        a.on(i);
+        a.add(i);
       }
       assert(a._capacity - a.length > 1);
       var before = a.length;
-      var ret = a.on(1);
+      var ret = a.add(1);
       assert(ret === before + 1);
       assert(a.length === ret);
       assert(ret === 6);
@@ -45,11 +45,11 @@ describe('Deque', function () {
     it('should add single argument - exact capacity', function () {
       var a = new Deque();
       for (var i = 0; i < 15; i++) {
-        a.on(i);
+        a.add(i);
       }
       assert(a._capacity - a.length === 1);
       var before = a.length;
-      var ret = a.on(1);
+      var ret = a.add(1);
       assert(ret === before + 1);
       assert(a.length === ret);
       assert(ret === 16);
@@ -61,11 +61,11 @@ describe('Deque', function () {
     it('should add single argument - over capacity', function () {
       var a = new Deque();
       for (var i = 0; i < 16; i++) {
-        a.on(i);
+        a.add(i);
       }
       assert(a._capacity - a.length === 0);
       var before = a.length;
-      var ret = a.on(1);
+      var ret = a.add(1);
       assert(ret === before + 1);
       assert(a.length === ret);
       assert(ret === 17);
@@ -76,13 +76,13 @@ describe('Deque', function () {
 
   });
 
-  describe('Deque.prototype.off', function () {
+  describe('Deque.prototype.remove', function () {
 
     it('should return undefined when empty deque', function () {
       var a = new Deque();
       assert(a.length === 0);
-      assert(a.off() === void 0);
-      assert(a.off() === void 0);
+      assert(a.remove() === void 0);
+      assert(a.remove() === void 0);
       assert(a.length === 0);
     });
 
@@ -91,15 +91,15 @@ describe('Deque', function () {
       var b = new Array();
 
       for (var i = 0; i < 8; i++) {
-        a.on(i);
+        a.add(i);
         b.push(i);
       }
 
-      assert(a.off() === 0);
-      assert(a.off() === 1);
+      assert(a.remove() === 0);
+      assert(a.remove() === 1);
       b.shift(); b.shift();
       assert.deepEqual(a.toArray(), b);
-      a.on(1);
+      a.add(1);
       b.push(1);
       assert.deepEqual(a.toArray(), b);
     });
