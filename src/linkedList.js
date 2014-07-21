@@ -5,8 +5,6 @@ function LinkedList (capacity) {
   this.length = 0;
   this._makeCapacity();
 
-  this._head = this[0];
-  this._tail = this[0];
   this._current = this[0];
   this._last = this[0];
 }
@@ -30,8 +28,7 @@ LinkedList.prototype._resizeTo = function LinkedList$_resizeTo (capacity) {
 
 LinkedList.prototype.add = function LinkedList$add (item) {
   var length = this.length;
-  var argsLength = arguments.length;
-  if (argsLength === 0) return length;
+  if (item === undefined) return length;
 
   if (this._capacity < (length + 1)) {
     this._resizeTo(getCapacity(this._capacity * 1.5 + 16));
@@ -55,11 +52,11 @@ LinkedList.prototype.add = function LinkedList$add (item) {
 
   this.length = length + 1;
 
-  return this.length;
+  return node;
 };
 
-LinkedList.prototype.iterator = function LinkedList$iterator () {
-  this._current = this._last.next;
+LinkedList.prototype.rewind = function LinkedList$iterator () {
+  this._current = this._last;
   return (this.length === 0) ? void 0 : this._current.data;
 };
 
@@ -72,28 +69,24 @@ LinkedList.prototype.next = function LinkedList$next () {
   return this._current.data;
 };
 
-LinkedList.prototype.remove = function LinkedList$remove () {
+LinkedList.prototype.remove = function LinkedList$remove (node) {
   var length = this.length;
-  if (length === 0) return void 0;
+  if (length === 0 || node === undefined) return void 0;
 
   this.length = length - 1;
 
-  var current = this._current;
-  var output = current.data;
-
   if ((length - 1) !== 0) {
-    var previous = current.prev;
-    var next = current.next;
+    var previous = node.prev;
+    var next = node.next;
 
-    this._swap(current.index, length - 1);
+    this._swap(node.index, length - 1);
 
-    previous.next = current.next;
-    next.prev = current.prev;
+    previous.next = node.next;
+    next.prev = node.prev;
 
-    this._current = previous;
   }
 
-  return current.data;
+  return node.data;
 };
 
 LinkedList.prototype._swap = function LinkedList$_swap (indexA, indexB) {

@@ -34,8 +34,6 @@ while (--l) {
   deque.add(l);
 }
 
-linkedList.iterator();
-
 var suite = new Benchmark.Suite();
 
 suite
@@ -49,13 +47,13 @@ suite
   deque.add(3);
 })
 .add('linked list', function () {
-  linkedList.remove();
-  linkedList.remove();
-  linkedList.remove();
+  var one = linkedList.add(1);
+  var two = linkedList.add(2);
+  var three = linkedList.add(3);
 
-  linkedList.add(1);
-  linkedList.add(2);
-  linkedList.add(3);
+  linkedList.remove(one);
+  linkedList.remove(two);
+  linkedList.remove(three);
 })
 .add('built-in array', function () {
   linkedListBuiltIn.splice(1, 1);
