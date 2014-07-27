@@ -1,7 +1,9 @@
 module.exports = LinkedList;
 
-function LinkedList (capacity) {
+function LinkedList (Constructor, capacity) {
+  this._Constructor = createWrapper(Constructor, bind(this._remove, this));
   this._capacity = getCapacity(capacity);
+
   this.length = 0;
   this._makeCapacity();
 
@@ -10,9 +12,13 @@ function LinkedList (capacity) {
 }
 
 LinkedList.prototype._makeCapacity = function LinkedList$_makeCapacity () {
-  var len = this._capacity;
-  for (var i = 0; i < len; ++i) {
-    this[i] = {prev: void 0, next: void 0, data: void 0, index: i};
+  for (var i = 0, len = this._capacity; i < len; ++i) {
+    this[i] = {
+      prev: void 0,
+      next: void 0,
+      instance: new this._Constructor(),
+      index: i
+    };
   }
 };
 
@@ -26,16 +32,14 @@ LinkedList.prototype._resizeTo = function LinkedList$_resizeTo (capacity) {
   arrayCopy(oldList, 0, this, 0, length);
 };
 
-LinkedList.prototype.add = function LinkedList$add (item) {
+LinkedList.prototype.create = function LinkedList$create () {
   var length = this.length;
-  if (item === undefined) return length;
 
   if (this._capacity < (length + 1)) {
     this._resizeTo(getCapacity(this._capacity * 1.5 + 16));
   }
 
   var node = this[length];
-  node.data = item;
 
   if (this.length !== 0) {
     var previous = this._last;
@@ -50,14 +54,16 @@ LinkedList.prototype.add = function LinkedList$add (item) {
     node.next = node;
   }
 
+  node.instance.id = node;
+
   this.length = length + 1;
 
-  return node;
+  return node.instance;
 };
 
 LinkedList.prototype.rewind = function LinkedList$iterator () {
   this._current = this._last;
-  return (this.length === 0) ? void 0 : this._current.data;
+  return (this.length === 0) ? void 0 : this._current.instance;
 };
 
 LinkedList.prototype.isEmpty = function LinkedList$hasNext () {
@@ -66,27 +72,23 @@ LinkedList.prototype.isEmpty = function LinkedList$hasNext () {
 
 LinkedList.prototype.next = function LinkedList$next () {
   this._current = this._current.next;
-  return this._current.data;
+  return this._current.instance;
 };
 
-LinkedList.prototype.remove = function LinkedList$remove (node) {
+LinkedList.prototype._remove = function LinkedList$_remove (node) {
   var length = this.length;
-  if (length === 0 || node === undefined) return void 0;
 
   this.length = length - 1;
 
-  if ((length - 1) !== 0) {
+  if (this.length !== 0) {
     var previous = node.prev;
     var next = node.next;
 
-    this._swap(node.index, length - 1);
+    this._swap(node.index, this.length);
 
     previous.next = node.next;
     next.prev = node.prev;
-
   }
-
-  return node.data;
 };
 
 LinkedList.prototype._swap = function LinkedList$_swap (indexA, indexB) {
@@ -104,12 +106,37 @@ LinkedList.prototype.toArray = function () {
   current = this._last.next;
 
   for (var i = 0, len = this.length; i < len; i++) {
-    result.push(current.data);
+    result.push(current.instance);
     current = current.next;
   }
 
   return result;
 };
+
+function createWrapper (ObjectClass, releaseFn) {
+
+  function Wrapper () {
+    this.id = void 0;
+    ObjectClass.call(this);
+  }
+
+  Wrapper.prototype = Object.create(ObjectClass.prototype);
+
+  Wrapper.prototype.release = (function relaseFn (releaseFn) {
+    return function () {
+      releaseFn(this.id);
+    };
+  })(releaseFn);
+
+  return Wrapper;
+}
+
+function bind (fn, context) {
+  return function (node) {
+    fn.call(context, node);
+  };
+};
+
 
 function getCapacity (capacity) {
   if (capacity !== (capacity | 0)) return 16;

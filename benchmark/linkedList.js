@@ -22,47 +22,47 @@ function printPlatform () {
   console.log(plat + '\n' + cpus + '\n');
 }
 
-var linkedList = new LinkedList();
+var linkedList = new LinkedList(Object);
 var linkedListBuiltIn = new LinkedListBuiltIn();
 var deque = new Deque();
 
 var l = 2 * 1000 * 1000;
 
 while (--l) {
-  linkedList.add(l);
-  linkedListBuiltIn.push(l);
-  deque.add(l);
+  linkedList.create();
+  linkedListBuiltIn.push({});
+  deque.add({});
 }
 
 var suite = new Benchmark.Suite();
 
 suite
 .add('deque', function () {
-  deque.remove();
-  deque.remove();
-  deque.remove();
+  var one = deque.remove();
+  var two = deque.remove();
+  var three = deque.remove();
 
-  deque.add(1);
-  deque.add(2);
-  deque.add(3);
+  deque.add(one);
+  deque.add(two);
+  deque.add(three);
 })
 .add('linked list', function () {
-  var one = linkedList.add(1);
-  var two = linkedList.add(2);
-  var three = linkedList.add(3);
+  var one = linkedList.create();
+  var two = linkedList.create();
+  var three = linkedList.create();
 
-  linkedList.remove(one);
-  linkedList.remove(two);
-  linkedList.remove(three);
+  one.release();
+  two.release();
+  three.release();
 })
 .add('built-in array', function () {
-  linkedListBuiltIn.splice(1, 1);
-  linkedListBuiltIn.splice(2, 1);
-  linkedListBuiltIn.splice(3, 1);
+  var one = linkedListBuiltIn.splice(1, 1);
+  var two = linkedListBuiltIn.splice(2, 1);
+  var three = linkedListBuiltIn.splice(3, 1);
 
-  linkedListBuiltIn.push(1);
-  linkedListBuiltIn.push(2);
-  linkedListBuiltIn.push(3);
+  linkedListBuiltIn.push(one);
+  linkedListBuiltIn.push(two);
+  linkedListBuiltIn.push(three);
 })
 .on('error', function (e) {
   console.log('Error: ', e.target.error);
