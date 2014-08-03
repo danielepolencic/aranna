@@ -1,59 +1,54 @@
-var util = require('./util')
-  , Observer = require('./observer')
-  , ComponentCollection = require('./componentCollection');
+var ObjectPool = require('./objectPool')
+  , topics = require('./topics');
 
 module.exports = Entity;
 
-function Entity () {
-  Observer.call(this);
-  ComponentCollection.call(this);
+function Entity (options) {
+  ObjectPool.call(this, options);
+  this._componentsLength = 0;
+  this._components = {};
+  this._isAlive = false;
 }
 
-['add', 'remove'].forEach(function (action) {
-
-  Entity.prototype[action + 'Component'] = util.sequential(
-    ComponentCollection.prototype[action],
-    function (component) {
-      Observer.prototype.publish
-        .apply(this, ['component#' + action].concat(component.name))(component, this);
-    }
-  );
-
+Entity.prototype = Object.create(ObjectPool.prototype, {
+  constructor: {value: Entity}
 });
 
-Entity.prototype.onComponentAdded = function () {
-  var topics = util.toArray(arguments);
-  return Observer.prototype.subscribe.apply(this, ['component#add'].concat(topics));
+Entity.prototype.init = function () {
+  ObjectPool.prototype.init.call(this);
+  if (this._componentsLength !== 0) {
+    this._components = {};
+    this._componentsLength = 0;
+  }
+  return this;
 };
 
-Entity.prototype.onComponentRemoved = function () {
-  var topics = util.toArray(arguments);
-  return Observer.prototype.subscribe.apply(this, ['component#remove'].concat(topics));
+Entity.prototype.addComponent = function (component) {
+  if (component === void 0 || (typeof component.name !== 'string') ||
+      (component.name in this._components)) return void 0;
+  this._componentsLength++;
+  this._components[component.name] = component;
+  this._sandbox.publish(topics.COMPONENT_ADDED, component, this);
+  return this._componentsLength;
 };
 
-Entity.prototype.offComponentAdded = function () {
-  var topics = util.toArray(arguments);
-  return Observer.prototype.unsubscribe.apply(this, ['component#add'].concat(topics));
+Entity.prototype.removeComponent = function (componentName) {
+  if ((typeof componentName === 'string') && (componentName in this._components)) {
+    var component = this._components[componentName];
+    this._sandbox.publish(topics.COMPONENT_REMOVED, component, this);
+    this._components[componentName] = void 0;
+    this._componentsLength--;
+  }
+  return this._componentsLength;
 };
 
-Entity.prototype.offComponentRemoved = function () {
-  var topics = util.toArray(arguments);
-  return Observer.prototype.unsubscribe.apply(this, ['component#remove'].concat(topics));
+Entity.prototype.has = function (componentName) {
+  return (typeof componentName === 'string') && (componentName in this._components);
 };
 
-Entity.prototype.componentNames = function () {
-  return ComponentCollection.prototype.keys.call(this);
-};
-
-Entity.prototype.isEmpty = function () {
-  return !ComponentCollection.prototype.size.call(this);
-};
-
-Entity.prototype.has = function () {
-  var components = util.toArray(arguments);
-  return util.isArrayContained(ComponentCollection.prototype.keys.call(this), components);
-};
-
-Entity.prototype.getComponent = function (componentName) {
-  return ComponentCollection.prototype.get.call(this, componentName);
+Entity.prototype.release = function () {
+  if (!this.isReleased()) {
+    this._sandbox.publish(topics.ENTITY_REMOVED, this);
+  }
+  ObjectPool.prototype.release.call(this);
 };

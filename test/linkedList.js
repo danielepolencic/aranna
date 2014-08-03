@@ -1,33 +1,43 @@
 var LinkedList = require('./../src/linkedList')
+  , ObjectPool = require('./../src/objectPool')
   , assert = require('assert');
 
-describe.only('LinkedList', function () {
+describe('LinkedList', function () {
   var list;
 
   beforeEach(function () {
-    list = new LinkedList(Object);
+    list = new LinkedList({constructor: ObjectPool});
   });
 
   describe('LinkedList.prototype.constructor', function () {
 
-    it('should take no argument', function () {
+    it('should take no capacity argument', function () {
       assert(list._capacity === 16);
     });
 
     it('should take a capacity argument', function () {
-      var a = new LinkedList(Object, 32);
+      var a = new LinkedList({constructor: ObjectPool, capacity: 32});
       assert(a._capacity === 32);
     });
 
   });
 
-  describe('Iterator', function () {
+  describe('LinkedList.prototype.Empty', function () {
 
-    it('should return undefined when empty list', function () {
-      list.rewind();
+    it('should return false when empty list', function () {
       assert.equal(list.length, 0);
       assert(list.isEmpty());
     });
+
+    it('should return true when not empty list', function () {
+      list.create();
+      assert.equal(list.length, 1);
+      assert(!list.isEmpty());
+    });
+
+  });
+
+  describe('LinkedList.prototype.next', function () {
 
     it('should return the head and subsequent items', function () {
       var arr = [];
@@ -52,13 +62,27 @@ describe.only('LinkedList', function () {
     });
 
     it('should not iterate through a removed item', function () {
-      var a = list.create();
-      var b = list.create();
-      var c = list.create();
+      var a = list.create().init();
+      var b = list.create().init();
+      var c = list.create().init();
       list.rewind();
       list.next();
       b.release();
-      assert.equal(list.next(), c);
+      assert.strictEqual(list.next(), c);
+    });
+
+  });
+
+  describe('LinkedList.prototype.rewind', function () {
+
+    it('should start from the beginning', function () {
+      var a = list.create();
+      var b = list.create();
+      list.rewind();
+      assert.strictEqual(list.next(), a);
+      assert.strictEqual(list.next(), b);
+      list.rewind();
+      assert.strictEqual(list.next(), a);
     });
 
   });
@@ -100,26 +124,31 @@ describe.only('LinkedList', function () {
 
   });
 
-  describe('ObjectClass.prototype.release', function () {
+  describe('LinkedList.prototype.remove', function () {
 
     it('should free up one slot', function () {
       var a = list.create();
       var b = list.create();
-      b.release();
+      list.remove(b._node);
       assert.equal(list.length, 1);
     });
 
-    it('should release the last object', function () {
+    it('should remove the last object', function () {
       var a = list.create();
       var b = list.create();
-      b.release();
+      list.remove(b._node);
       assert.strictEqual(list.next(), a);
-      a.release();
+      list.remove(a._node);
       assert.equal(list.length, 0);
       var c = list.create();
       assert.strictEqual(list.next(), c);
     });
 
+  });
+
+  it('should play nicely with ObjectPool', function () {
+    list.create().init().release();
+    assert.equal(list.length, 0);
   });
 
 });

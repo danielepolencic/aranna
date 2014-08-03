@@ -1,14 +1,14 @@
 module.exports = LinkedList;
 
-function LinkedList (Constructor, capacity) {
-  this._Constructor = createWrapper(Constructor, bind(this._remove, this));
-  this._capacity = getCapacity(capacity);
+function LinkedList (options) {
+  this._Constructor = options.constructor;
+  this._capacity = getCapacity(options.capacity);
+  this._sandbox = options.sandbox;
 
   this.length = 0;
   this._makeCapacity();
 
-  this._current = this[0];
-  this._last = this[0];
+  this._current = this._last = this[0];
 }
 
 LinkedList.prototype._makeCapacity = function LinkedList$_makeCapacity () {
@@ -16,9 +16,14 @@ LinkedList.prototype._makeCapacity = function LinkedList$_makeCapacity () {
     this[i] = {
       prev: void 0,
       next: void 0,
-      instance: new this._Constructor(),
+      instance: void 0,
       index: i
     };
+    this[i].instance = new this._Constructor({
+      node: this[i],
+      linkedList: this,
+      sandbox: this._sandbox
+    });
   }
 };
 
@@ -54,19 +59,17 @@ LinkedList.prototype.create = function LinkedList$create () {
     node.next = node;
   }
 
-  node.instance.id = node;
-
   this.length = length + 1;
 
   return node.instance;
 };
 
-LinkedList.prototype.rewind = function LinkedList$iterator () {
+LinkedList.prototype.rewind = function LinkedList$rewind () {
   this._current = this._last;
   return (this.length === 0) ? void 0 : this._current.instance;
 };
 
-LinkedList.prototype.isEmpty = function LinkedList$hasNext () {
+LinkedList.prototype.isEmpty = function LinkedList$isEmpty () {
   return this.length === 0;
 };
 
@@ -75,7 +78,7 @@ LinkedList.prototype.next = function LinkedList$next () {
   return this._current.instance;
 };
 
-LinkedList.prototype._remove = function LinkedList$_remove (node) {
+LinkedList.prototype.remove = function LinkedList$remove (node) {
   var length = this.length;
 
   this.length = length - 1;
@@ -89,6 +92,8 @@ LinkedList.prototype._remove = function LinkedList$_remove (node) {
     previous.next = node.next;
     next.prev = node.prev;
   }
+
+  return node.instance;
 };
 
 LinkedList.prototype._swap = function LinkedList$_swap (indexA, indexB) {
@@ -100,43 +105,6 @@ LinkedList.prototype._swap = function LinkedList$_swap (indexA, indexB) {
   this[indexB] = blockA;
   this[indexB].index = blockB.index;
 };
-
-LinkedList.prototype.toArray = function () {
-  var result = [],
-  current = this._last.next;
-
-  for (var i = 0, len = this.length; i < len; i++) {
-    result.push(current.instance);
-    current = current.next;
-  }
-
-  return result;
-};
-
-function createWrapper (ObjectClass, releaseFn) {
-
-  function Wrapper () {
-    this.id = void 0;
-    ObjectClass.call(this);
-  }
-
-  Wrapper.prototype = Object.create(ObjectClass.prototype);
-
-  Wrapper.prototype.release = (function relaseFn (releaseFn) {
-    return function () {
-      releaseFn(this.id);
-    };
-  })(releaseFn);
-
-  return Wrapper;
-}
-
-function bind (fn, context) {
-  return function (node) {
-    fn.call(context, node);
-  };
-};
-
 
 function getCapacity (capacity) {
   if (capacity !== (capacity | 0)) return 16;
