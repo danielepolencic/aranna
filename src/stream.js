@@ -71,6 +71,7 @@ Stream.prototype.filter = function (fn) {
 
 Stream.prototype.reduce =
 Stream.prototype.fold = function (seed, fn) {
+  if (fn === void 0) fn = function () {};
   var id = this._counter++;
   var ticks = this._ticks;
   this._fns.push(function (next) {

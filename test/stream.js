@@ -104,6 +104,16 @@ describe('Stream', function () {
       assert.notDeepEqual(accumulator, [1, 2]);
     });
 
+    it('should work with no args', function () {
+      var listenerFn = sinon.spy();
+      stream
+      .fold()
+      .onValue(listenerFn);
+      stream.push(1);
+      stream.tick();
+      sinon.assert.called(listenerFn);
+    });
+
   });
 
   describe('Stream.prototype.release', function () {
