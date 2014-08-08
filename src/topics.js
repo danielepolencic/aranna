@@ -17,7 +17,7 @@ module.exports.for = function (unit, action) {
     case 'removed':
       actionContribute -= 6;
       break;
-    case 'refresh':
+    case 'active':
       actionContribute += 4;
       break;
     default:

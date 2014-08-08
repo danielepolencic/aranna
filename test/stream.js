@@ -3,146 +3,71 @@ var assert = require('assert')
   , Stream = require('./../src/stream');
 
 describe('Stream', function () {
-  var stream, linkedList;
+  var stream, dt = void 0;
 
   beforeEach(function () {
-    linkedList = {remove: sinon.spy()};
-    stream = new Stream({
-      node: {},
-      linkedList: linkedList,
-      sandbox: {}
-    });
+    stream = new Stream();
   });
 
-  describe('Stream.prototype.push', function () {
+  describe('Stream.prototype.forEach', function () {
 
-    it('should push data', function () {
+    it('should iterate over entities and components', function () {
       var listenerFn = sinon.spy();
-      stream.onValue(listenerFn).push(1);
-      sinon.assert.called(listenerFn);
-    });
-
-    it('should not push when no arguments', function () {
-      var listenerFn = sinon.spy();
-      stream.onValue(listenerFn).push();
-      sinon.assert.notCalled(listenerFn);
-    });
-
-  });
-
-  describe('Stream.prototype.{onValue, tap}', function () {
-
-    it('should print the incoming data', function () {
-      var listenerFn = sinon.spy();
-      stream.onValue(listenerFn);
-      stream.push(1);
-      sinon.assert.calledWith(listenerFn, 1);
+      stream.forEach(listenerFn);
+      stream.push(dt, 1, 2);
+      sinon.assert.calledWith(listenerFn, undefined, 1, 2);
     });
 
   });
 
   describe('Stream.prototype.map', function () {
 
-    it('should map the data', function () {
-      var listenerFn = sinon.spy();
-      stream.map(function (x) { return x + 1; }).onValue(listenerFn);
-      stream.push(1);
-      sinon.assert.calledWith(listenerFn, 2);
+    it('should map over a stream of entities', function () {
+      var onValue = sinon.spy();
+      var onMap = sinon.spy();
+      stream.map(function (dt, x) { return x + 1; }).forEach(onMap);
+      stream.forEach(onValue);
+      stream.push(dt, 1, 2);
+      sinon.assert.calledWith(onMap, undefined, 2, 2);
+      sinon.assert.calledWith(onValue, undefined, 1, 2);
     });
 
   });
 
   describe('Stream.prototype.filter', function () {
 
-    it('should filter', function () {
+    it('should filter out irrelevant entities', function () {
       var listenerFn = sinon.spy();
-      stream.filter(function (x) { return x > 3; }).onValue(listenerFn);
-      stream.push(1);
-      sinon.assert.notCalled(listenerFn);
-      stream.push(4);
-      sinon.assert.calledWith(listenerFn, 4);
-    });
-
-  });
-
-  describe('Stream.prototype.{fold, reduce}', function () {
-
-    it('should accumulate', function () {
-      var listenerFn = sinon.spy();
-      stream.fold(0, function (acc, x) { return acc + x; }).onValue(listenerFn);
-      stream.push(1);
-      stream.push(1);
-      stream.push(1);
-      sinon.assert.notCalled(listenerFn);
-      stream.tick();
-      sinon.assert.calledWith(listenerFn, 3);
+      stream.filter(function (dt, x) { return x > 1; }).forEach(listenerFn);
+      stream.push(dt, 1);
+      stream.push(dt, 3);
+      sinon.assert.calledWith(listenerFn, undefined, 3);
       sinon.assert.calledOnce(listenerFn);
     });
 
-    it('should work with multiple folds', function () {
+    it('should filter out by component irrelevant entities', function () {
       var listenerFn = sinon.spy();
-      stream
-      .fold(1, function (acc, x) { return acc + x; })
-      .fold(1, function (acc, x) { return acc + x; })
-      .onValue(listenerFn);
-      stream.push(1);
-      stream.push(1);
-      stream.tick();
-      sinon.assert.calledWith(listenerFn, 4);
-    });
-
-    it('should work with array as accumulator', function () {
-      var listenerFn = sinon.spy();
-      var accumulator = [];
-      stream
-      .fold(accumulator, function (acc, x) { return acc.concat(x); })
-      .onValue(listenerFn);
-      stream.push(1);
-      stream.push(2);
-      stream.tick();
-      sinon.assert.calledWith(listenerFn, [1, 2]);
-      assert.notDeepEqual(accumulator, [1, 2]);
-    });
-
-    it('should work with no args', function () {
-      var listenerFn = sinon.spy();
-      stream
-      .fold()
-      .onValue(listenerFn);
-      stream.push(1);
-      stream.tick();
-      sinon.assert.called(listenerFn);
+      stream.filter(function (dt, x, y) { return y < 3; }).forEach(listenerFn);
+      stream.push(dt, 4, 4);
+      stream.push(dt, 2, 2);
+      sinon.assert.calledWith(listenerFn, undefined, 2, 2);
+      sinon.assert.calledOnce(listenerFn);
     });
 
   });
 
-  describe('Stream.prototype.release', function () {
+  describe('Stream.prototype.fold', function () {
 
-    it('should release the stream back to the pool', function () {
-      stream.init().release();
-      stream.push(1);
-      sinon.assert.calledWith(linkedList.remove, stream._node);
+    it('should accumulate and release on `tick`', function () {
+      var listenerFn = sinon.spy();
+      stream.fold(0, function (dt, acc, x) { return acc + x; }).forEach(listenerFn);
+      stream.push(dt, 1);
+      stream.push(dt, 3);
+      sinon.assert.notCalled(listenerFn);
+      stream.tick();
+      sinon.assert.calledWith(listenerFn, undefined, 4);
     });
 
-  });
-
-  it('should allow complex pipelines', function () {
-    var listenerFn = sinon.spy();
-    stream
-    .map(function (x) { return x + 1; })
-    .filter(function (x) { return x % 2; })
-    .map(function (x) { return x; })
-    .fold(0, function (acc, x) { return acc + x; })
-    .filter(function (x) { return x % 2; })
-    .fold(5, function (acc, x) { return acc + x; })
-    .onValue(listenerFn);
-    stream.push(1);
-    stream.push(2);
-    stream.push(4);
-    stream.push(6);
-    sinon.assert.notCalled(listenerFn);
-    stream.tick();
-    sinon.assert.calledWith(listenerFn, 20);
   });
 
 });

@@ -1,12 +1,3 @@
-require('es6-shim');
+var Loop = require('./src/loop');
 
-var World = require('./src/world')
-  , Entity = require('./src/entity');
-
-module.exports.World = function () {
-  return new World();
-};
-
-module.exports.Entity = function () {
-  return new Entity();
-};
+module.exports = Loop;

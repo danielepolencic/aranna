@@ -1,28 +1,29 @@
 var assert = require('assert')
-  , Entity = require('./../index').Entity
-  , World = require('./../index').World;
+  , World = require('./../index');
 
 describe('Aranna', function () {
 
-  var hero = Entity();
-  hero.addComponent({name: 'position', x: 0, y: 0});
-  hero.addComponent({name: 'velocity', x: 1, y: 0});
+  var world = new World();
 
-  var world = World();
-  world.addSystem({
-    update: function (world, dt) {
-      world.getEntities('position', 'velocity').forEach(function (entity) {
-        position = entity.getComponent('position');
-        velocity = entity.getComponent('velocity');
-        position.x += velocity.x * dt;
-        position.y += velocity.y * dt;
-      });
-    }
-  });
-  world.addEntity(hero);
+  var hero = world
+    .entity('hero')
+    .addComponent({name: 'position', x: 0, y: 0})
+    .addComponent({name: 'velocity', x: 1, y: 0});
+
+  world
+    .system('PhysicSystem')
+    .onEntity('position', 'velocity')
+    .forEach(function (dt, entity) {
+      position = entity.getComponent('position');
+      velocity = entity.getComponent('velocity');
+      position.x += velocity.x * dt;
+      position.y += velocity.y * dt;
+    });
+
+  world.start();
 
   for (var i = 0; i < 10; i += 1) {
-    world.update(1);
+    world.run(1);
   };
 
   it('should move the hero', function () {

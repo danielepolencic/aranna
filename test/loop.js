@@ -10,12 +10,26 @@ describe('Loop', function () {
     loop = new Loop();
   });
 
+  describe('Loop.prototype.start', function () {
+
+    it('should watch for active entities and keep them alive', function () {
+      var listenerFn = sinon.spy();
+      loop.start();
+      loop.entity();
+      loop.run();
+      loop.system('test').onEntity().forEach(listenerFn);
+      loop.run();
+      sinon.assert.calledOnce(listenerFn);
+    });
+
+  });
+
   describe('Loop.prototype.run', function () {
 
     it('should watch for a property', function () {
       var listenerFn = sinon.spy();
-      loop.createWatcher('entity', 'added').onValue(listenerFn);
-      loop.createEntity();
+      loop.system('test').onEntity().forEach(listenerFn);
+      loop.entity();
       loop.run();
       sinon.assert.calledOnce(listenerFn);
     });
@@ -24,25 +38,23 @@ describe('Loop', function () {
       var listenerForEntityWithPosition = sinon.spy();
       var listenerForEntityWithVelocity = sinon.spy();
       var entityWithPosition, entityWithVelocity;
-      loop.createWatcher('entity', 'added')
-        .filter('position')
-        .onValue(listenerForEntityWithPosition);
-      loop.createWatcher('entity', 'added')
-        .filter('velocity')
-        .onValue(listenerForEntityWithVelocity)
-        .onValue(function () {
-          entityWithPosition = loop.createEntity();
-          entityWithPosition.addComponent({name: 'position'});
+      loop
+        .system('test1')
+        .onEntityAdded('position')
+        .forEach(listenerForEntityWithPosition)
+      loop
+        .system('test2')
+        .onEntityAdded('velocity')
+        .forEach(listenerForEntityWithVelocity)
+        .forEach(function () {
+          loop.entity().addComponent({name: 'position'});
         });
-      entityWithVelocity = loop.createEntity()
-      entityWithVelocity.addComponent({name: 'velocity'});
+      loop.entity().addComponent({name: 'velocity'});
       loop.run();
       sinon.assert.notCalled(listenerForEntityWithPosition);
       sinon.assert.calledOnce(listenerForEntityWithVelocity);
-      assert(listenerForEntityWithVelocity.args[0][0] === entityWithVelocity);
       loop.run();
       sinon.assert.calledOnce(listenerForEntityWithPosition);
-      assert(listenerForEntityWithPosition.args[0][0] === entityWithPosition);
     });
 
   });

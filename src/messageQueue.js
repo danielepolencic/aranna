@@ -7,14 +7,13 @@ function MessageQueue (capacity) {
   this._makeCapacity();
 }
 
-MessageQueue.prototype._makeCapacity = function MessageQueue$_makeCapacity () {
-  var len = this._capacity;
-  for (var i = 0; i < len; ++i) {
+MessageQueue.prototype._makeCapacity = function () {
+  for (var i = 0; i < this._capacity; ++i) {
     this[i] = {topic: void 0, entity: void 0, component: void 0};
   }
 };
 
-MessageQueue.prototype._resizeTo = function MessageQueue$_resizeTo (capacity) {
+MessageQueue.prototype._resizeTo = function (capacity) {
   var oldFront = this._front;
   var oldCapacity = this._capacity;
   var oldDeque = new Array(oldCapacity);
@@ -33,19 +32,8 @@ MessageQueue.prototype._resizeTo = function MessageQueue$_resizeTo (capacity) {
   }
 };
 
-MessageQueue.prototype.toArray = function MessageQueue$toArray () {
-  var len = this.length;
-  var ret = new Array(len);
-  var front = this._front;
-  var capacity = this._capacity;
-  for (var j = 0; j < len; ++j) {
-    ret[j] = this[(front + j) & (capacity - 1)];
-  }
-  return ret;
-};
-
 MessageQueue.prototype.publish =
-MessageQueue.prototype.add = function MessageQueue$queue (topic, entity, component) {
+MessageQueue.prototype.add = function (topic, entity, component) {
   var argsLength = arguments.length;
   var length = this.length;
 
@@ -66,7 +54,7 @@ MessageQueue.prototype.add = function MessageQueue$queue (topic, entity, compone
 };
 
 MessageQueue.prototype.consume =
-MessageQueue.prototype.remove = function MessageQueue$dequeue () {
+MessageQueue.prototype.remove = function () {
   var length = this.length;
   if (length === 0) return void 0;
   var front = this._front;
@@ -82,7 +70,9 @@ function arrayCopy (src, srcIndex, dst, dstIndex, len) {
   }
 }
 
-function pow2AtLeast (n) {
+function getCapacity (capacity) {
+  if (typeof capacity !== 'number') return 16;
+  var n = Math.min(Math.max(16, capacity), 1073741824);
   n = n >>> 0;
   n = n - 1;
   n = n | (n >> 1);
@@ -91,12 +81,4 @@ function pow2AtLeast (n) {
   n = n | (n >> 8);
   n = n | (n >> 16);
   return n + 1;
-}
-
-function getCapacity (capacity) {
-  if (capacity !== (capacity | 0)) return 16;
-  return pow2AtLeast(
-    Math.min(
-      Math.max(16, capacity), 1073741824)
-  );
 }

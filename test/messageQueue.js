@@ -1,14 +1,14 @@
 var MessageQueue = require('./../src/messageQueue')
   , assert = require('assert');
 
-describe('Deque', function () {
+describe('MessageQueue', function () {
   var q;
 
   beforeEach(function () {
     q = new MessageQueue();
   });
 
-  describe('Deque.prototype.constructor', function () {
+  describe('MessageQueue.prototype.constructor', function () {
 
     it('should take no argument', function () {
       assert.equal(q._capacity, 16);
@@ -21,7 +21,7 @@ describe('Deque', function () {
 
   });
 
-  describe('Deque.prototype.add', function () {
+  describe('MessageQueue.prototype.add', function () {
 
     it('should do nothing if no arguments', function () {
       var before = q.length;
@@ -90,7 +90,7 @@ describe('Deque', function () {
 
   });
 
-  describe('Deque.prototype.remove', function () {
+  describe('MessageQueue.prototype.remove', function () {
 
     it('should return undefined when empty deque', function () {
       assert.equal(q.length, 0);

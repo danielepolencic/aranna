@@ -4,16 +4,11 @@ var assert = require('assert')
   , Entity = require('./../src/entity');
 
 describe('Entity', function () {
-  var entity, component, linkedList, sandbox;
+  var entity, component, messageQueue;
 
   beforeEach(function () {
-    linkedList = {remove: sinon.spy()};
-    sandbox = {publish: sinon.spy()};
-    entity = new Entity({
-      node: {},
-      linkedList: linkedList,
-      sandbox: sandbox
-    });
+    messageQueue = {publish: sinon.spy()};
+    entity = new Entity(messageQueue);
     component = {name: 'position'};
   });
 
@@ -35,24 +30,24 @@ describe('Entity', function () {
   describe('Entity.prototype.addComponent', function () {
 
     it('should add a component', function () {
-      assert.equal(entity.addComponent(component), 1);
+      assert.equal(entity.addComponent(component), entity);
       sinon.assert.calledWith(
-        sandbox.publish,
+        messageQueue.publish,
         topics.COMPONENT_ADDED,
-        component,
-        entity
+        entity,
+        component
       );
     });
 
     it('should not add a component without name', function () {
       entity.addComponent({id: 1});
-      sinon.assert.notCalled(sandbox.publish);
+      sinon.assert.notCalled(messageQueue.publish);
     });
 
     it('should not overwrite a component', function () {
       entity.addComponent(component);
       entity.addComponent(component);
-      sinon.assert.calledOnce(sandbox.publish);
+      sinon.assert.calledOnce(messageQueue.publish);
     });
 
   });
@@ -61,12 +56,12 @@ describe('Entity', function () {
 
     it('should remove a component', function () {
       entity.addComponent(component);
-      assert.equal(entity.removeComponent('position'), 0);
+      assert.equal(entity.removeComponent('position'), entity);
       sinon.assert.calledWith(
-        sandbox.publish,
+        messageQueue.publish,
         topics.COMPONENT_REMOVED,
-        component,
-        entity
+        entity,
+        component
       );
     });
 
@@ -74,7 +69,7 @@ describe('Entity', function () {
       entity.addComponent(component);
       entity.removeComponent();
       entity.removeComponent({});
-      sinon.assert.calledOnce(sandbox.publish);
+      sinon.assert.calledOnce(messageQueue.publish);
     });
 
   });
@@ -88,23 +83,6 @@ describe('Entity', function () {
 
     it('should return false if the entity has a component', function () {
       assert(!entity.has('position'));
-    });
-
-  });
-
-  describe('Entity.prototype.release', function () {
-
-    it('should destroy the entity', function () {
-      entity.init();
-      entity.release();
-      sinon.assert.calledWith(sandbox.publish, topics.ENTITY_REMOVED);
-    });
-
-    it('should destroy just once', function () {
-      entity.init();
-      entity.release();
-      entity.release();
-      sinon.assert.calledOnce(sandbox.publish);
     });
 
   });
