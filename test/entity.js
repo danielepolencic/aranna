@@ -4,11 +4,12 @@ var assert = require('assert')
   , Entity = require('./../src/entity');
 
 describe('Entity', function () {
-  var entity, component, messageQueue;
+  var entity, component, messageQueue, memoryPool;
 
   beforeEach(function () {
     messageQueue = {publish: sinon.spy()};
-    entity = new Entity(messageQueue);
+    memoryPool = {remove: function () {}};
+    entity = new Entity(messageQueue, memoryPool);
     component = {name: 'position'};
   });
 
@@ -21,6 +22,7 @@ describe('Entity', function () {
 
     it('should reset the instance if already used', function () {
       entity.init().addComponent({name: 'position'});
+      entity.release();
       entity.init();
       assert(!entity.has('position'));
     });

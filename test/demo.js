@@ -3,10 +3,10 @@ var assert = require('assert')
 
 describe('Aranna', function () {
 
-  var world = new World();
+  var world = World();
 
   var hero = world
-    .entity('hero')
+    .create('hero')
     .addComponent({name: 'position', x: 0, y: 0})
     .addComponent({name: 'velocity', x: 1, y: 0});
 

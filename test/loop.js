@@ -1,13 +1,16 @@
 var assert = require('assert')
   , topics = require('./../src/topics')
   , sinon = require('sinon')
-  , Loop = require('./../src/loop');
+  , Loop = require('./../src/loop')
+  , Entity = require('./../src/entity')
+  , MessageQueue = require('./../src/messageQueue');
 
 describe('Loop', function () {
-  var loop;
+  var loop, messageQueue;
 
   beforeEach(function () {
-    loop = new Loop();
+    messageQueue = new MessageQueue();
+    loop = new Loop(Entity, messageQueue);
   });
 
   describe('Loop.prototype.start', function () {
@@ -15,7 +18,7 @@ describe('Loop', function () {
     it('should watch for active entities and keep them alive', function () {
       var listenerFn = sinon.spy();
       loop.start();
-      loop.entity();
+      loop.create();
       loop.run();
       loop.system('test').onEntity().forEach(listenerFn);
       loop.run();
@@ -29,7 +32,7 @@ describe('Loop', function () {
     it('should watch for a property', function () {
       var listenerFn = sinon.spy();
       loop.system('test').onEntity().forEach(listenerFn);
-      loop.entity();
+      loop.create();
       loop.run();
       sinon.assert.calledOnce(listenerFn);
     });
@@ -47,9 +50,9 @@ describe('Loop', function () {
         .onEntityAdded('velocity')
         .forEach(listenerForEntityWithVelocity)
         .forEach(function () {
-          loop.entity().addComponent({name: 'position'});
+          loop.create().addComponent({name: 'position'});
         });
-      loop.entity().addComponent({name: 'velocity'});
+      loop.create().addComponent({name: 'velocity'});
       loop.run();
       sinon.assert.notCalled(listenerForEntityWithPosition);
       sinon.assert.calledOnce(listenerForEntityWithVelocity);

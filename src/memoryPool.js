@@ -8,13 +8,13 @@ function MemoryPool (constructor, messageQueue, capacity) {
   this._messageQueue = messageQueue;
   this._capacity = ~~capacity;
 
-  this.length = 0;
+  this._length = 0;
   this._makeCapacity(this._capacity);
 }
 
 MemoryPool.prototype._makeCapacity = function (size) {
   this._capacity = getCapacity(size);
-  for (var i = this.length; i < this._capacity; ++i) {
+  for (var i = this._length; i < this._capacity; ++i) {
     this[i] = new this._constructor(this._messageQueue, this, i);
   }
 };
@@ -27,21 +27,21 @@ MemoryPool.prototype._checkCapacity = function (size) {
 };
 
 MemoryPool.prototype.create = function () {
-  var length = this.length;
+  var length = this._length;
 
   this._checkCapacity(length + 1);
-  this.length = length + 1;
+  this._length = length + 1;
 
-  return this[length]._setup();
+  return this[length].init();
 };
 
 MemoryPool.prototype.isEmpty = function () {
-  return this.length === 0;
+  return this._length === 0;
 };
 
 MemoryPool.prototype.remove = function (node) {
-  this.length -= 1;
-  this._swap(node._id, this.length);
+  this._length -= 1;
+  this._swap(node._id, this._length);
 };
 
 MemoryPool.prototype._swap = function (indexA, indexB) {
@@ -67,29 +67,26 @@ function getCapacity (capacity) {
   return n + 1;
 }
 
-function ObjectPooled (messageQueue, entityManager, id) {
-  this._entityManager = entityManager;
+function ObjectPooled (messageQueue, memoryPool, id) {
+  this._memoryPool = memoryPool;
   this._id = id;
   this._isReleased = true;
   this._messageQueue = messageQueue;
 };
 
-ObjectPooled.prototype._setup = function () {
-  if (this._isReleased === true) {
-    this._messageQueue.publish(topics.ENTITY_ADDED, this);
-    this.init();
-  }
+ObjectPooled.prototype.init = function () {
   this._isReleased = false;
   return this;
 };
 
-ObjectPooled.prototype.init = function () {};
+ObjectPooled.prototype.isReleased = function () {
+  return this._isReleased;
+};
 
 ObjectPooled.prototype.release = function () {
   if (this._isReleased === false) {
-    this._messageQueue.publish(topics.ENTITY_REMOVED, this);
     this._isReleased = true;
-    this._entityManager.remove.call(this._entityManager, this);
+    this._memoryPool.remove.call(this._memoryPool, this);
   }
   return this;
 };

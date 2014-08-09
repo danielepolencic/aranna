@@ -1,3 +1,8 @@
-var Loop = require('./src/loop');
+var Loop = require('./src/loop')
+  , Entity = require('./src/entity')
+  , MessageQueue = require('./src/messageQueue');
 
-module.exports = Loop;
+module.exports = function () {
+  var messageQueue = new MessageQueue();
+  return new Loop(Entity, messageQueue);
+};

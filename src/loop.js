@@ -1,22 +1,27 @@
 var MemoryPool = require('./memoryPool').MemoryPool
   , MessageQueue = require('./messageQueue')
   , Stream = require('./stream')
-  , Entity = require('./entity')
   , topics = require('./topics');
 
 module.exports = Loop;
 
-function Loop () {
-  this._messageQueue = new MessageQueue();
+function Loop (Constructor, messageQueue) {
+  MemoryPool.call(this, Constructor, messageQueue);
   this._streams = [];
-  this._entities = new MemoryPool(Entity, this._messageQueue);
 }
+
+Loop.prototype = Object.create(MemoryPool.prototype, {
+  constructor: {value: Loop}
+});
 
 Loop.prototype.start = function () {
   var stream = new Stream(topics.ENTITY_REFRESH);
-  stream.forEach(function (dt, entity) {
-    this._messageQueue.publish(topics.ENTITY_REFRESH, entity);
-  }.bind(this));
+  var refresh = (function (publish, topic, context) {
+    return function (dt, entity) {
+      publish.call(context, topic, entity)
+    }
+  })(this._messageQueue.publish, topics.ENTITY_REFRESH, this._messageQueue);
+  stream.forEach(refresh);
   this._streams.push(stream);
 };
 
@@ -49,20 +54,16 @@ for (var i = 0, len = methods.length; i < len; ++i) {
   })(methods[i].topic);
 }
 
-Loop.prototype.entity = function () {
-  return this._entities.create();
-};
-
 Loop.prototype.run = function (dt) {
   for (var i = 0, len_i = this._messageQueue.length; i < len_i; i++) {
     var message = this._messageQueue.consume();
-    for (var j = 0, len_j = this._streams.length; j < len_j; j++) {
+    for (var j = 0; j < this._streams.length; j++) {
       var stream = this._streams[j];
       if ((stream.topic & ~message.topic) === 0)
         stream.push.call(stream, dt, message.entity, message.component);
     }
   }
-  for (var j = 0, len_j = this._streams.length; j < len_j; j++) {
+  for (var j = 0; j < this._streams.length; j++) {
     var stream = this._streams[j];
     stream.tick.call(stream, dt);
   }

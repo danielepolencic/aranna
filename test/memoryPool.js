@@ -27,13 +27,11 @@ describe('MemoryPool', function () {
   describe('MemoryPool.prototype.isEmpty', function () {
 
     it('should return false when empty list', function () {
-      assert.equal(memoryPool.length, 0);
       assert(memoryPool.isEmpty());
     });
 
     it('should return true when not empty list', function () {
       memoryPool.create();
-      assert.equal(memoryPool.length, 1);
       assert(!memoryPool.isEmpty());
     });
 
@@ -45,33 +43,33 @@ describe('MemoryPool', function () {
       for (var i = 0; i < 5; i++) {
         memoryPool.create();
       }
-      assert(memoryPool._capacity - memoryPool.length > 1);
-      var lengthBefore = memoryPool.length;
+      assert(memoryPool._capacity - memoryPool._length > 1);
+      var lengthBefore = memoryPool._length;
       memoryPool.create();
-      assert.equal(memoryPool.length, lengthBefore + 1);
-      assert.equal(memoryPool.length, 6);
+      assert.equal(memoryPool._length, lengthBefore + 1);
+      assert.equal(memoryPool._length, 6);
     });
 
     it('should add single instance - exact capacity', function () {
       for (var i = 0; i < 15; i++) {
         memoryPool.create();
       }
-      assert.equal(memoryPool._capacity - memoryPool.length, 1);
-      var lengthBefore = memoryPool.length;
+      assert.equal(memoryPool._capacity - memoryPool._length, 1);
+      var lengthBefore = memoryPool._length;
       memoryPool.create();
-      assert.equal(memoryPool.length, lengthBefore + 1);
-      assert.equal(memoryPool.length, 16);
+      assert.equal(memoryPool._length, lengthBefore + 1);
+      assert.equal(memoryPool._length, 16);
     });
 
     it('should add single instance - over capacity', function () {
       for (var i = 0; i < 16; i++) {
         memoryPool.create();
       }
-      assert(memoryPool._capacity - memoryPool.length === 0);
-      var lengthBefore = memoryPool.length;
+      assert(memoryPool._capacity - memoryPool._length === 0);
+      var lengthBefore = memoryPool._length;
       memoryPool.create();
-      assert.equal(memoryPool.length, lengthBefore + 1);
-      assert.equal(memoryPool.length, 17);
+      assert.equal(memoryPool._length, lengthBefore + 1);
+      assert.equal(memoryPool._length, 17);
     });
 
   });
@@ -82,7 +80,7 @@ describe('MemoryPool', function () {
       var a = memoryPool.create();
       var b = memoryPool.create();
       memoryPool.remove(a);
-      assert.equal(memoryPool.length, 1);
+      assert.equal(memoryPool._length, 1);
     });
 
     it('should remove the last object', function () {
@@ -90,19 +88,19 @@ describe('MemoryPool', function () {
       var b = memoryPool.create();
       memoryPool.remove(b);
       memoryPool.remove(a);
-      assert.equal(memoryPool.length, 0);
+      assert.equal(memoryPool._length, 0);
       var c = memoryPool.create();
       memoryPool.remove(c);
-      assert.equal(memoryPool.length, 0);
+      assert.equal(memoryPool._length, 0);
     });
 
   });
 
   describe('ObjectPooled.prototype.constructor', function () {
 
-    it('should notify of creation', function () {
-      memoryPool.create();
-      sinon.assert.calledOnce(messageQueue.publish);
+    it('should mark the object as used', function () {
+      var obj = memoryPool.create();
+      assert(!obj.isReleased());
     });
 
   });
@@ -111,12 +109,11 @@ describe('MemoryPool', function () {
 
     it('should release the object to the pool', function () {
       memoryPool.create().release();
-      assert.equal(memoryPool.length, 0);
+      assert.equal(memoryPool._length, 0);
     });
 
     it('should release the object to the once', function () {
       memoryPool.create().release().release();
-      sinon.assert.calledTwice(messageQueue.publish);
     });
 
   });
