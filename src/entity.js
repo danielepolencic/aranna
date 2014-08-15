@@ -33,6 +33,10 @@ Entity.prototype.addComponent = function (component) {
   return this;
 };
 
+Entity.prototype.isAlive = function () {
+  return !ObjectPooled.prototype.isReleased.call(this);
+};
+
 Entity.prototype.getComponent = function (componentName) {
   return this._components[componentName];
 };

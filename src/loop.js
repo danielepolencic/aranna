@@ -1,39 +1,30 @@
 var MemoryPool = require('./memoryPool').MemoryPool
   , MessageQueue = require('./messageQueue')
   , Stream = require('./stream')
+  , Entity = require('./entity')
   , topics = require('./topics');
 
 module.exports = Loop;
 
-function Loop (Constructor, messageQueue) {
-  MemoryPool.call(this, Constructor, messageQueue);
+function Loop (messageQueue) {
+  MemoryPool.call(this, Entity, messageQueue);
   this._streams = [];
+  this._nextQueue = new MessageQueue();
 }
 
 Loop.prototype = Object.create(MemoryPool.prototype, {
   constructor: {value: Loop}
 });
 
-Loop.prototype.start = function () {
-  var stream = new Stream(topics.ENTITY_REFRESH);
-  var refresh = (function (publish, topic, context) {
-    return function (dt, entity) {
-      publish.call(context, topic, entity)
-    }
-  })(this._messageQueue.publish, topics.ENTITY_REFRESH, this._messageQueue);
-  stream.forEach(refresh);
-  this._streams.push(stream);
-};
-
 Loop.prototype.system = function (name) {
   return this;
 };
 
 var methods = [
-  {name: 'onEntity', topic: topics.ENTITY_REFRESH},
+  {name: 'onEntity', topic: topics.ENTITY_ACTIVE},
   {name: 'onEntityAdded', topic: topics.ENTITY_ADDED},
   {name: 'onEntityRemoved', topic: topics.ENTITY_REMOVED},
-  {name: 'onComponent', topic: topics.COMPONENT_REFRESH},
+  {name: 'onComponent', topic: topics.COMPONENT_ACTIVE},
   {name: 'onComponentAdded', topic: topics.COMPONENT_ADDED},
   {name: 'onComponentRemoved', topic: topics.COMPONENT_REMOVED}
 ];
@@ -56,15 +47,33 @@ for (var i = 0, len = methods.length; i < len; ++i) {
 
 Loop.prototype.run = function (dt) {
   for (var i = 0, len_i = this._messageQueue.length; i < len_i; i++) {
-    var message = this._messageQueue.consume();
+
+    var topic = this._messageQueue.next();
+    var entity = this._messageQueue.entity();
+    var component = this._messageQueue.component();
+
+    if ((topic & ~topics.ENTITY_ACTIVE) !== 0) {
+      this._messageQueue.remove();
+    }
+
+    if ((topic & ~topics.ENTITY_ACTIVE) === 0 && !entity.isAlive()) {
+      this._messageQueue.remove();
+    }
+
+    if ((topic & ~topics.ENTITY_ADDED) === 0 && entity.isAlive()) {
+      this._messageQueue.publish(topics.ENTITY_ACTIVE, entity, component);
+    }
+
     for (var j = 0; j < this._streams.length; j++) {
       var stream = this._streams[j];
-      if ((stream.topic & ~message.topic) === 0)
-        stream.push.call(stream, dt, message.entity, message.component);
+      if ((stream.topic & ~topic) === 0) {
+        stream.push(dt, entity, component);
+      }
     }
   }
+
   for (var j = 0; j < this._streams.length; j++) {
     var stream = this._streams[j];
-    stream.tick.call(stream, dt);
+    stream.tick(dt);
   }
 };

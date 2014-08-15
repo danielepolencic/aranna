@@ -4,5 +4,5 @@ var Loop = require('./src/loop')
 
 module.exports = function () {
   var messageQueue = new MessageQueue();
-  return new Loop(Entity, messageQueue);
+  return new Loop(messageQueue);
 };

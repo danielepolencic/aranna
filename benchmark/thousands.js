@@ -2,7 +2,7 @@ var Benchmark = require('benchmark')
   , Aranna = require('./../index')
   , makr = require('makrjs');
 
-var l = 2 * 1000;
+var l = 2 * 1000 * 1000;
 
 var aranna = Aranna();
 var makrjs = new makr.World();
@@ -12,8 +12,7 @@ while (--l) {
   makrjs.create();
 }
 
-// aranna.start();
-// makrjs.loopStart();
+makrjs.loopStart();
 
 var suite = new Benchmark.Suite();
 
@@ -26,7 +25,7 @@ suite
   hero1.release();
   hero2.release();
   hero3.release();
-  // aranna.run();
+  aranna.run();
 })
 .add('Makrjs', function () {
   var hero1 = makrjs.create();
@@ -36,7 +35,7 @@ suite
   makrjs.kill(hero1);
   makrjs.kill(hero2);
   makrjs.kill(hero3);
-  // makrjs.update();
+  makrjs.update();
 })
 .on('error', function(event) {
   console.log(String(event.target));

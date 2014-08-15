@@ -1,5 +1,5 @@
 var MessageQueue = require('./../src/messageQueue')
-  , assert = require('assert');
+  , expect = require('chai').expect;
 
 describe('MessageQueue', function () {
   var q;
@@ -8,15 +8,35 @@ describe('MessageQueue', function () {
     q = new MessageQueue();
   });
 
-  describe('MessageQueue.prototype.constructor', function () {
+  describe('MessageQueue.prototype.toArray', function () {
 
-    it('should take no argument', function () {
-      assert.equal(q._capacity, 16);
+    it('should return empty array when queue is empty', function () {
+      expect(q.toArray()).to.deep.equal([]);
     });
 
-    it('should take a capacity argument', function () {
-      var a = new MessageQueue(32);
-      assert.equal(a._capacity, 32);
+    it('should return a sequence of items - ordered', function () {
+      for (var i = 0; i < 3; i++) {
+        q.add('topic' + i, 'entity' + i, 'component' + i);
+      }
+      expect(q.toArray()).to.deep.equal([
+        {topic: 'topic0', entity: 'entity0', component: 'component0'},
+        {topic: 'topic1', entity: 'entity1', component: 'component1'},
+        {topic: 'topic2', entity: 'entity2', component: 'component2'}
+      ]);
+    });
+
+    it('should return a sequence of items - unordered', function () {
+      for (var i = 0; i < 3; i++) {
+        q.add('topic' + i, 'entity' + i, 'component' + i);
+      }
+      q.next();
+      q.remove();
+      q.add('topic3', 'entity3', 'component3');
+      expect(q.toArray()).to.deep.equal([
+        {topic: 'topic1', entity: 'entity1', component: 'component1'},
+        {topic: 'topic2', entity: 'entity2', component: 'component2'},
+        {topic: 'topic3', entity: 'entity3', component: 'component3'}
+      ]);
     });
 
   });
@@ -24,68 +44,21 @@ describe('MessageQueue', function () {
   describe('MessageQueue.prototype.add', function () {
 
     it('should do nothing if no arguments', function () {
-      var before = q.length;
-      var ret = q.add();
-      assert.equal(ret, before);
-      assert.equal(q.length, ret);
-      assert.equal(ret, 0);
+      q.add();
+      expect(q.length).to.equal(0);
     });
 
-    it('should add single argument - plenty of capacity', function () {
-      for (var i = 0; i < 5; i++) {
-        q.add(i, 'entity', 'component');
-      }
-      assert(q._capacity - q.length > 1);
-      var before = q.length;
-      var ret = q.add(5, 'entity', 'component');
-      assert.equal(ret, before + 1);
-      assert.equal(q.length, ret);
-      assert.equal(ret, 6);
-      for (var i = 0; i < 6; i++) {
-        assert.deepEqual(q.remove(), {
-          topic: i,
-          entity: 'entity',
-          component: 'component'
+    it('should add single argument', function () {
+      var array = [];
+      for (var i = 0; i < 18; i++) {
+        q.add('topic' + i, 'entity' + i, 'component' + i);
+        array.push({
+          topic: 'topic' + i,
+          entity: 'entity' + i,
+          component: 'component' + i
         });
       }
-    });
-
-    it('should add single argument - exact capacity', function () {
-      for (var i = 0; i < 15; i++) {
-        q.add(i, 'entity', 'component');
-      }
-      assert.equal(q._capacity - q.length, 1);
-      var before = q.length;
-      var ret = q.add(15, 'entity', 'component');
-      assert.equal(ret, before + 1);
-      assert.equal(q.length, ret);
-      assert.equal(ret, 16);
-      for (var i = 0; i < 16; i++) {
-        assert.deepEqual(q.remove(), {
-          topic: i,
-          entity: 'entity',
-          component: 'component'
-        });
-      }
-    });
-
-    it('should add single argument - over capacity', function () {
-      for (var i = 0; i < 16; i++) {
-        q.add(i, 'entity', 'component');
-      }
-      assert.equal(q._capacity - q.length, 0);
-      var before = q.length;
-      var ret = q.add(16, 'entity', 'component');
-      assert.equal(ret, before + 1);
-      assert.equal(q.length, ret);
-      assert.equal(ret, 17);
-      for (var i = 0; i < 17; i++) {
-        assert.deepEqual(q.remove(), {
-          topic: i,
-          entity: 'entity',
-          component: 'component'
-        });
-      }
+      expect(q.toArray()).to.deep.equal(array);
     });
 
   });
@@ -93,31 +66,38 @@ describe('MessageQueue', function () {
   describe('MessageQueue.prototype.remove', function () {
 
     it('should return undefined when empty deque', function () {
-      assert.equal(q.length, 0);
-      assert.equal(q.remove(), void 0);
-      assert.equal(q.remove(), void 0);
-      assert.equal(q.length, 0);
+      expect(q.length).to.equal(0);
+      expect(q.remove()).to.not.be.ok;
+      expect(q.remove()).to.not.be.ok;
+      expect(q.length).to.equal(0);
     });
 
     it('should return the item at the front of the deque', function () {
-      var b = new Array();
-
-      for (var i = 0; i < 8; i++) {
-        q.add(i, 'entity', 'component');
-        b.push({topic: i, entity: 'entity', component: 'component'});
+      for (var i = 0; i < 3; i++) {
+        q.add('topic' + i, 'entity' + i, 'component' + i);
       }
+      q.next();
+      q.remove();
+      q.remove();
+      q.add('topic3', 'entity3', 'component3');
+      expect(q.toArray()).to.deep.equal([
+        {topic: 'topic1', entity: 'entity1', component: 'component1'},
+        {topic: 'topic3', entity: 'entity3', component: 'component3'}
+      ]);
+    });
 
-      assert(q.remove(), {topic: 0, entity: 'entity', component: 'component'});
-      assert(q.remove(), {topic: 1, entity: 'entity', component: 'component'});
-      b.shift(); b.shift();
-      b.forEach(function (element, index) {
-        assert.deepEqual(element, q.remove());
-      });
-      q.add(8, 'entity', 'component');
-      b = [{topic: 8, entity: 'entity', component: 'component'}];
-      b.forEach(function (element, index) {
-        assert.deepEqual(element, q.remove());
-      });
+    it('should remove all the element and start again', function () {
+      for (var i = 0; i < 3; i++) {
+        q.add('topic' + i, 'entity' + i, 'component' + i);
+      }
+      q.next();
+      q.remove();
+      q.remove();
+      q.remove();
+      q.add('topic3', 'entity3', 'component3');
+      expect(q.toArray()).to.deep.equal([
+        {topic: 'topic3', entity: 'entity3', component: 'component3'}
+      ]);
     });
 
   });

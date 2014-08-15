@@ -10,6 +10,10 @@ describe('Aranna', function () {
     .addComponent({name: 'position', x: 0, y: 0})
     .addComponent({name: 'velocity', x: 1, y: 0});
 
+  // world.create().release();
+  // world.create().release();
+  // world.create().release();
+
   world
     .system('PhysicSystem')
     .onEntity('position', 'velocity')
@@ -20,13 +24,12 @@ describe('Aranna', function () {
       position.y += velocity.y * dt;
     });
 
-  world.start();
-
   for (var i = 0; i < 10; i += 1) {
     world.run(1);
   };
 
   it('should move the hero', function () {
+    // console.log(world._messageQueue)
     assert.equal(hero.getComponent('position').x, 10);
   });
 

@@ -3,6 +3,7 @@ var Benchmark = require('benchmark')
   , ObjectPooled = require('./../src/memoryPool').ObjectPooled
   , Entity = require('./../src/entity')
   , Loop = require('./../src/loop')
+  , MessageQueue = require('./../src/messageQueue')
   , Aranna = require('./../index')
   , Deque = require('double-ended-queue')
   , LinkedListBuiltIn = Array;
@@ -15,7 +16,8 @@ var deque = new Deque();
 var sandbox = {publish: function () {}};
 var memoryPool = new MemoryPool(ObjectPooled, sandbox);
 var memoryPoolEntity = new MemoryPool(Entity, sandbox);
-var loop = new Loop(Entity, sandbox);
+var messageQueue = new MessageQueue();
+var loop = new Loop(sandbox);
 var aranna = Aranna();
 
 while (--l) {
@@ -24,11 +26,13 @@ while (--l) {
 
   memoryPool.create();
   memoryPoolEntity.create();
+  messageQueue.publish();
   loop.create();
   aranna.create();
 }
 
-aranna.start();
+messageQueue.next();
+messageQueue.next();
 
 var suite = new Benchmark.Suite();
 
@@ -59,6 +63,10 @@ suite
   one.release();
   two.release();
   three.release();
+})
+.add('MessageQueue', function () {
+  messageQueue.publish();
+  messageQueue.remove();
 })
 .add('Loop (Entity)', function () {
   var one = loop.create();

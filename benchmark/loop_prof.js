@@ -3,8 +3,6 @@ var Loop = require('./../index');
 
 var loop = Loop();
 
-loop.start();
-
 while (--l) {
   loop.create().release();
 }
