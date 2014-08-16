@@ -15,7 +15,7 @@ Entity.prototype = Object.create(ObjectPooled.prototype, {
 });
 
 Entity.prototype.init = function () {
-  if (this.isReleased()) {
+  if (ObjectPooled.prototype.isReleased.call(this)) {
     this._messageQueue.publish(topics.ENTITY_ADDED, this);
     this._components = {};
     this._componentsLength = 0;
@@ -31,10 +31,6 @@ Entity.prototype.addComponent = function (component) {
   this._components[component.name] = component;
   this._messageQueue.publish(topics.COMPONENT_ADDED, this, component);
   return this;
-};
-
-Entity.prototype.isAlive = function () {
-  return !ObjectPooled.prototype.isReleased.call(this);
 };
 
 Entity.prototype.getComponent = function (componentName) {

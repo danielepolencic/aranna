@@ -1,12 +1,31 @@
+var Benchmark = require('benchmark')
+  , Stream = require('./../src/stream');
+
 var l = 2 * 1000 * 1000;
-var Stream = require('./../src/stream');
 
 var stream = new Stream();
-
-stream.map(function mapFn (x) {
+var mapFn = function mapFn (x) {
   return x + 1;
-});
+};
 
-while (--l) {
-  stream.push(l);
-}
+stream.map(mapFn);
+
+var suite = new Benchmark.Suite();
+
+suite
+.add('Stream push', function () {
+  stream.push(1);
+})
+.add('function call', function () {
+  mapFn(1);
+})
+.on('error', function(event) {
+  console.log(String(event.target));
+})
+.on('cycle', function(event) {
+  console.log(String(event.target));
+})
+.on('complete', function() {
+  console.log('Fastest is ' + this.filter('fastest').pluck('name'));
+})
+.run();

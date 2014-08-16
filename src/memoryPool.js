@@ -1,35 +1,38 @@
 var topics = require('./topics');
 
+var MIN_CAPACITY = 16;
+var GROW_FACTOR = 3;
+
 module.exports.MemoryPool = MemoryPool;
 module.exports.ObjectPooled = ObjectPooled;
 
 function MemoryPool (constructor, messageQueue, capacity) {
   this._constructor = constructor;
   this._messageQueue = messageQueue;
-  this._capacity = ~~capacity;
+  this._capacity = ~~capacity || MIN_CAPACITY;
 
   this._length = 0;
-  this._makeCapacity(this._capacity);
+  this._makeCapacity();
+
+  var that = this;
+  this.remove = function (node) {
+    that._remove(node);
+  };
 }
 
-MemoryPool.prototype._makeCapacity = function (size) {
-  this._capacity = getCapacity(size);
+MemoryPool.prototype._makeCapacity = function () {
   for (var i = this._length; i < this._capacity; ++i) {
     this[i] = new this._constructor(this._messageQueue, this, i);
-  }
-};
-
-MemoryPool.prototype._checkCapacity = function (size) {
-  var capacity = ~~this._capacity;
-  if (capacity < size) {
-    this._makeCapacity(capacity * 1.5 + 16);
   }
 };
 
 MemoryPool.prototype.create = function () {
   var length = this._length;
 
-  this._checkCapacity(length + 1);
+  if (this._capacity < (length + 1)) {
+    this._capacity *= GROW_FACTOR;
+    this._makeCapacity();
+  }
   this._length = length + 1;
 
   return this[length].init();
@@ -39,33 +42,20 @@ MemoryPool.prototype.isEmpty = function () {
   return this._length === 0;
 };
 
-MemoryPool.prototype.remove = function (node) {
+MemoryPool.prototype._remove = function (node) {
   this._length -= 1;
   this._swap(node._id, this._length);
 };
 
-MemoryPool.prototype._swap = function (indexA, indexB) {
-  var blockA = this[indexA];
-  var blockB = this[indexB];
+MemoryPool.prototype._swap = function (targetIndex, sourceIndex) {
+  var blockA = this[targetIndex];
+  var blockB = this[sourceIndex];
 
-  this[indexA] = blockB;
-  this[indexA].id = blockA.id;
-  this[indexB] = blockA;
-  this[indexB].id = blockB.id;
+  this[targetIndex] = blockB;
+  this[targetIndex].id = blockA.id;
+  this[sourceIndex] = blockA;
+  this[sourceIndex].id = blockB.id;
 };
-
-function getCapacity (capacity) {
-  if (typeof capacity !== 'number') return 16;
-  var n = Math.min(Math.max(16, capacity), 1073741824);
-  n = n >>> 0;
-  n = n - 1;
-  n = n | (n >> 1);
-  n = n | (n >> 2);
-  n = n | (n >> 4);
-  n = n | (n >> 8);
-  n = n | (n >> 16);
-  return n + 1;
-}
 
 function ObjectPooled (messageQueue, memoryPool, id) {
   this._memoryPool = memoryPool;
@@ -79,6 +69,10 @@ ObjectPooled.prototype.init = function () {
   return this;
 };
 
+ObjectPooled.prototype.isAlive = function () {
+  return !this._isReleased;
+};
+
 ObjectPooled.prototype.isReleased = function () {
   return this._isReleased;
 };
@@ -86,7 +80,7 @@ ObjectPooled.prototype.isReleased = function () {
 ObjectPooled.prototype.release = function () {
   if (this._isReleased === false) {
     this._isReleased = true;
-    this._memoryPool.remove.call(this._memoryPool, this);
+    this._memoryPool.remove(this);
   }
   return this;
 };
