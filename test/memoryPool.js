@@ -108,12 +108,29 @@ describe('MemoryPool', function () {
   describe('ObjectPooled.prototype.release', function () {
 
     it('should release the object to the pool', function () {
+      var entity = memoryPool.create();
+      entity.release();
       memoryPool.create().release();
       assert.equal(memoryPool._length, 0);
     });
 
-    it('should release the object to the once', function () {
+    it('should release the object once', function () {
       memoryPool.create().release().release();
+    });
+
+  });
+
+  describe('ObjectPooled.prototype.isAlive', function () {
+
+    it('should return true when the entity is alive', function () {
+      obj = memoryPool.create();
+      assert(obj.isAlive());
+    });
+
+    it('should return false when the entity is not alive', function () {
+      obj = memoryPool.create();
+      obj.release();
+      assert(!obj.isAlive());
     });
 
   });

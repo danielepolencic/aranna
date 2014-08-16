@@ -89,4 +89,18 @@ describe('Entity', function () {
 
   });
 
+  describe('Entity.prototype.release', function () {
+
+    it('should release the entity to the memory pool', function () {
+      entity.init().release();
+      sinon.assert.calledTwice(messageQueue.publish);
+    });
+
+    it('should release the entity just once', function () {
+      entity.init().release().release();
+      sinon.assert.calledTwice(messageQueue.publish);
+    });
+
+  });
+
 });

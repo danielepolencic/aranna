@@ -8,7 +8,7 @@ var Benchmark = require('benchmark')
   , Deque = require('double-ended-queue')
   , LinkedListBuiltIn = Array;
 
-var l = 2 * 1000 * 1000;
+var l = 2 * 1000;
 
 var linkedListBuiltIn = new LinkedListBuiltIn();
 var deque = new Deque();
@@ -68,7 +68,7 @@ suite
   messageQueue.publish();
   messageQueue.remove();
 })
-.add('Loop (Entity)', function () {
+.add('Loop (Entity) - run', function () {
   var one = loop.create();
   var two = loop.create();
   var three = loop.create();
@@ -77,7 +77,7 @@ suite
   two.release();
   three.release();
 })
-.add('Aranna', function () {
+.add('Aranna - run', function () {
   var one = aranna.create();
   var two = aranna.create();
   var three = aranna.create();

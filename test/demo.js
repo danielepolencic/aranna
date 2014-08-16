@@ -10,9 +10,12 @@ describe('Aranna', function () {
     .addComponent({name: 'position', x: 0, y: 0})
     .addComponent({name: 'velocity', x: 1, y: 0});
 
-  // world.create().release();
-  // world.create().release();
-  // world.create().release();
+  for (var i = 0; i < 2; i++) {
+    world.create('world' + i).release();
+    world.run(1);
+  }
+  // console.log(world._messageQueue.toArray())
+  // assert.equal(world._messageQueue.length, 1, world._messageQueue.length);
 
   world
     .system('PhysicSystem')
@@ -29,7 +32,8 @@ describe('Aranna', function () {
   };
 
   it('should move the hero', function () {
-    // console.log(world._messageQueue)
+    console.log(world._messageQueue.toArray())
+    assert.equal(world._messageQueue.length, 1);
     assert.equal(hero.getComponent('position').x, 10);
   });
 

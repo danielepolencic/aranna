@@ -2,7 +2,7 @@ var Benchmark = require('benchmark')
   , Aranna = require('./../index')
   , makr = require('makrjs');
 
-var l = 2 * 1000 * 1000;
+var l = 2 * 1000;
 
 var aranna = Aranna();
 var makrjs = new makr.World();
@@ -12,6 +12,7 @@ while (--l) {
   makrjs.create();
 }
 
+console.log(aranna._messageQueue.length)
 makrjs.loopStart();
 
 var suite = new Benchmark.Suite();
@@ -44,6 +45,7 @@ suite
   console.log(String(event.target));
 })
 .on('complete', function() {
+console.log(aranna._messageQueue.length)
   console.log('Fastest is ' + this.filter('fastest').pluck('name'));
 })
 .run();

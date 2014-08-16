@@ -15,6 +15,12 @@ function Stream (topic) {
   this.tick = function (dt, element, component) {
     self._tick(dt, element, component);
   };
+
+  this.push1 = function (dt, element, component) {
+    self._push1(dt, element, component);
+  };
+
+  this._length = 0;
 }
 
 Stream.prototype._tick = function Stream$tick (dt, entity, component) {
@@ -28,6 +34,25 @@ Stream.prototype._push = function Stream$push (dt, entity, component) {
     this._subscribers[i](dt, entity, component);
   }
 };
+
+Stream.prototype._push1 = function (dt, entity, component) {
+  for (var i = 0; i < this._length / 3; i += 3) {
+    var fn = this[i], context = this[i + 1], op = this[i + 2], stream = this[i + 3];
+
+    var result = fn.call(context, dt, entity, component);
+
+    if (op === 'map') {
+      stream.push1(result);
+    }
+  }
+};
+
+Stream.prototype.map1 = function (fn, context) {
+  this[this._length] = fn;
+  this[this._length + 1] = context;
+  this[this._length + 2] = 'map';
+  this[this._length + 3] = new Stream();
+}
 
 Stream.prototype.filter = function Stream$filter (fn) {
   var stream = new Stream();

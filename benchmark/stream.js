@@ -13,6 +13,9 @@ stream.map(mapFn);
 var suite = new Benchmark.Suite();
 
 suite
+.add('Stream push1', function () {
+  stream.push1(1);
+})
 .add('Stream push', function () {
   stream.push(1);
 })

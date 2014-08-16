@@ -26,7 +26,7 @@ MemoryPool.prototype._makeCapacity = function () {
   }
 };
 
-MemoryPool.prototype.create = function () {
+MemoryPool.prototype.create = function (name) {
   var length = this._length;
 
   if (this._capacity < (length + 1)) {
@@ -35,7 +35,7 @@ MemoryPool.prototype.create = function () {
   }
   this._length = length + 1;
 
-  return this[length].init();
+  return this[length].init(name);
 };
 
 MemoryPool.prototype.isEmpty = function () {
@@ -47,14 +47,14 @@ MemoryPool.prototype._remove = function (node) {
   this._swap(node._id, this._length);
 };
 
-MemoryPool.prototype._swap = function (targetIndex, sourceIndex) {
-  var blockA = this[targetIndex];
-  var blockB = this[sourceIndex];
+MemoryPool.prototype._swap = function (indexA, indexB) {
+  var blockA = this[indexA];
+  var blockB = this[indexB];
 
-  this[targetIndex] = blockB;
-  this[targetIndex].id = blockA.id;
-  this[sourceIndex] = blockA;
-  this[sourceIndex].id = blockB.id;
+  this[indexA] = blockB;
+  this[indexA]._id = blockA._id;
+  this[indexB] = blockA;
+  this[indexB]._id = blockB._id;
 };
 
 function ObjectPooled (messageQueue, memoryPool, id) {

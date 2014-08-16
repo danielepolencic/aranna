@@ -21,7 +21,7 @@ Loop.prototype.system = function (name) {
 };
 
 var methods = [
-  {name: 'onEntity', topic: topics.ENTITY_ACTIVE},
+  {name: 'onEntity', topic: topics.ENTITY_REFRESH},
   {name: 'onEntityAdded', topic: topics.ENTITY_ADDED},
   {name: 'onEntityRemoved', topic: topics.ENTITY_REMOVED},
   {name: 'onComponent', topic: topics.COMPONENT_ACTIVE},
@@ -52,16 +52,16 @@ Loop.prototype.run = function (dt) {
     var entity = this._messageQueue.entity();
     var component = this._messageQueue.component();
 
-    if ((topic & ~topics.ENTITY_ACTIVE) !== 0) {
+    var isEntityRefresh = (topics.ENTITY_REFRESH & ~topic) === 0;
+    var isEntityAlive = entity.isAlive();
+    var isEntityAdded = (topics.ENTITY_ADDED & ~topic) === 0;
+
+    if (!isEntityRefresh || !isEntityAlive) {
       this._messageQueue.remove();
     }
 
-    if ((topic & ~topics.ENTITY_ACTIVE) === 0 && !entity.isAlive()) {
-      this._messageQueue.remove();
-    }
-
-    if ((topic & ~topics.ENTITY_ADDED) === 0 && entity.isAlive()) {
-      this._messageQueue.publish(topics.ENTITY_ACTIVE, entity, component);
+    if (isEntityAdded && isEntityAlive) {
+      this._messageQueue.promoteTopicTo(topics.ENTITY_ACTIVE);
     }
 
     for (var j = 0; j < this._streams.length; j++) {

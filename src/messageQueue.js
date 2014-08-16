@@ -4,7 +4,7 @@ var TOPIC = 2;
 var ENTITY = 3;
 var COMPONENT = 4;
 var N_ITEMS = 5;
-var MIN_CAPACITY = 16;
+var MIN_CAPACITY = 4;
 var GROW_FACTOR = 3;
 
 module.exports = MessageQueue;
@@ -23,6 +23,12 @@ Object.defineProperty(MessageQueue.prototype, 'length', {
     return this._length / N_ITEMS;
   }
 });
+
+MessageQueue.prototype.inspect =
+MessageQueue.prototype.valueOf =
+MessageQueue.prototype.toString = function () {
+  return '[object MessageQueue]';
+};
 
 MessageQueue.prototype._makeCapacity = function () {
   for (var i = this._length; i < this._capacity; i += N_ITEMS) {
@@ -79,6 +85,10 @@ MessageQueue.prototype.component = function () {
   return this[this._current + COMPONENT];
 };
 
+MessageQueue.prototype.promoteTopicTo = function (newTopic) {
+  this[this._current + TOPIC] = newTopic;
+};
+
 MessageQueue.prototype.remove = function () {
   if ((this._length - N_ITEMS) < 0 || this._current < 0) return void 0;
   this._length = this._length - N_ITEMS;
@@ -95,21 +105,25 @@ MessageQueue.prototype.remove = function () {
 MessageQueue.prototype._remove = function (target) {
   var next = this[target + NEXT];
   var prev = this[target + PREV];
+
   this[prev + NEXT] = this[target + NEXT];
   this[next + PREV] = this[target + PREV];
 };
 
 MessageQueue.prototype._swap = function (source, target) {
-  var next = this[source + NEXT];
-  var prev = this[source + PREV];
-  this[prev + NEXT] = target;
-  this[next + PREV] = target;
+  if (source !== target) {
+    var next = this[source + NEXT];
+    var prev = this[source + PREV];
+    this[prev + NEXT] = target;
+    this[next + PREV] = target;
 
-  this[target + NEXT] = this[source + NEXT];
-  this[target + PREV] = this[source + PREV];
-  this[target + TOPIC] = this[source + TOPIC];
-  this[target + ENTITY] = this[source + ENTITY];
-  this[target + COMPONENT] = this[source + COMPONENT];
+    this[target + NEXT] = this[source + NEXT];
+    this[target + PREV] = this[source + PREV];
+
+    this[target + TOPIC] = this[source + TOPIC];
+    this[target + ENTITY] = this[source + ENTITY];
+    this[target + COMPONENT] = this[source + COMPONENT];
+  }
 
   if (this._current === source) this._current = target;
   if (this._last === source) this._last = target;

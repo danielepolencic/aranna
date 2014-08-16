@@ -100,6 +100,70 @@ describe('MessageQueue', function () {
       ]);
     });
 
+    it('should remove the entire queue', function () {
+      var array = [];
+      for (var i = 0; i < 17; i++) {
+        q.add('topic' + i, 'entity' + i, 'component' + i);
+        array.push({
+          topic: 'topic' + i,
+          entity: 'entity' + i,
+          component: 'component' + i
+        });
+      }
+      for (var i = 0, len = q.length; i < len; i++) {
+        var next = q.next();
+        q.remove();
+        array.shift();
+        expect(q.toArray()).to.deep.equal(array);
+      }
+      expect(q.toArray()).to.deep.equal([]);
+    });
+
+    it('should remove the tail more than once', function () {
+      var array = [];
+      for (var i = 0; i < 17; i++) {
+        q.add('topic' + i, 'entity' + i, 'component' + i);
+        array.push({
+          topic: 'topic' + i,
+          entity: 'entity' + i,
+          component: 'component' + i
+        });
+      }
+      for (var i = 0; i < 17; i++) {
+        q.next();
+      }
+      for (var i = 0; i < 17; i++) {
+        q.remove();
+        array.pop();
+        expect(q.toArray()).to.deep.equal(array);
+      }
+    });
+
+  });
+
+  describe('MessageQueue.prototype.promoteTopicTo', function () {
+
+    it('should change the topic', function () {
+      var array = [];
+      for (var i = 0; i < 17; i++) {
+        q.add('topic' + i, 'entity' + i, 'component' + i);
+        array.push({
+          topic: 'topic' + i,
+          entity: 'entity' + i,
+          component: 'component' + i
+        });
+      }
+      expect(q.toArray()).to.deep.equal(array);
+      for (var i = 0, len = q.length; i < len; i++) {
+        var next = q.next();
+        if (i % 2) {
+          q.promoteTopicTo(next + 'x2');
+          array[i].topic = array[i].topic + 'x2';
+        }
+        expect(q.toArray()).to.deep.equal(array);
+      }
+    });
+
   });
 
 });

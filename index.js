@@ -1,5 +1,4 @@
 var Loop = require('./src/loop')
-  , Entity = require('./src/entity')
   , MessageQueue = require('./src/messageQueue');
 
 module.exports = function () {

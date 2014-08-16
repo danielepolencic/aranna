@@ -5,6 +5,7 @@ module.exports = Entity;
 
 function Entity (sandbox, memoryPool, id) {
   ObjectPooled.call(this, sandbox, memoryPool, id);
+  this._name = void 0;
 
   this._componentsLength = 0;
   this._components = {};
@@ -14,7 +15,14 @@ Entity.prototype = Object.create(ObjectPooled.prototype, {
   constructor: {value: Entity}
 });
 
-Entity.prototype.init = function () {
+Entity.prototype.inspect =
+Entity.prototype.valueOf =
+Entity.prototype.toString = function () {
+  return '[object Entity {' + this._name + '}]';
+};
+
+Entity.prototype.init = function (name) {
+  this._name = name;
   if (ObjectPooled.prototype.isReleased.call(this)) {
     this._messageQueue.publish(topics.ENTITY_ADDED, this);
     this._components = {};
@@ -52,7 +60,7 @@ Entity.prototype.has = function (componentName) {
 };
 
 Entity.prototype.release = function () {
-  if (!this.isReleased()) {
+  if (!ObjectPooled.prototype.isReleased.call(this)) {
     this._messageQueue.publish(topics.ENTITY_REMOVED, this);
   }
   ObjectPooled.prototype.release.call(this);
