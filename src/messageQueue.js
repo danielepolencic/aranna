@@ -24,11 +24,11 @@ Object.defineProperty(MessageQueue.prototype, 'length', {
   }
 });
 
-MessageQueue.prototype.inspect =
-MessageQueue.prototype.valueOf =
-MessageQueue.prototype.toString = function () {
-  return '[object MessageQueue]';
-};
+// MessageQueue.prototype.inspect =
+// MessageQueue.prototype.valueOf =
+// MessageQueue.prototype.toString = function () {
+//   return '[object MessageQueue]';
+// };
 
 MessageQueue.prototype._makeCapacity = function () {
   for (var i = this._length; i < this._capacity; i += N_ITEMS) {
@@ -69,10 +69,9 @@ MessageQueue.prototype.add = function (topic, entity, component) {
   return this.length;
 };
 
-MessageQueue.prototype.consume =
 MessageQueue.prototype.next = function () {
   if (this._length === 0) return void 0;
-  this._current = (this._current >= 0) ? this[this._current += NEXT]
+  this._current = (this._current >= 0) ? this[this._current + NEXT]
     : this[this._last + NEXT];
   return this[this._current + TOPIC];
 };
@@ -126,7 +125,8 @@ MessageQueue.prototype._swap = function (source, target) {
   }
 
   if (this._current === source) this._current = target;
-  if (this._last === source) this._last = target;
+  // ugly hack ?!
+  if (this._last === source) this._last = this[this[target + NEXT] + PREV];
 };
 
 MessageQueue.prototype.toArray = function () {
@@ -134,12 +134,12 @@ MessageQueue.prototype.toArray = function () {
   var array = new Array(this.length);
   var current = this._last;
   for (var i = 0, len = this._length / N_ITEMS; i < len; i += 1) {
-    current = this[current + NEXT]
+    current = this[current + NEXT];
     array[i] = {
       topic: this[current + TOPIC],
       entity: this[current + ENTITY],
       component: this[current + COMPONENT]
     };
-  };
+  }
   return array;
 };

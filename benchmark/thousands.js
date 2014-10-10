@@ -2,22 +2,42 @@ var Benchmark = require('benchmark')
   , Aranna = require('./../index')
   , makr = require('makrjs');
 
+var MessageQueue = require('./../src/messageQueue');
+var messageQueue = new MessageQueue();
+var MemoryPool = require('./../src/memoryPool');
+var memoryPool = new MemoryPool(messageQueue);
+
 var l = 2 * 1000;
 
 var aranna = Aranna();
 var makrjs = new makr.World();
 
 while (--l) {
+  memoryPool.create();
   aranna.create();
   makrjs.create();
 }
 
+console.log(messageQueue.length)
 console.log(aranna._messageQueue.length)
 makrjs.loopStart();
 
 var suite = new Benchmark.Suite();
 
 suite
+.add('loop', function () {
+  var entity = memoryPool.create();
+  entity.release();
+  memoryPool.remove(entity);
+  for (var i = 0; i < (messageQueue.length / 2) - 2; i++) {
+    messageQueue.next();
+    // messageQueue.remove();
+  }
+  messageQueue.next();
+  messageQueue.remove();
+  messageQueue.next();
+  messageQueue.remove();
+})
 .add('Aranna', function () {
   var hero1 = aranna.create();
   var hero2 = aranna.create();
@@ -45,6 +65,7 @@ suite
   console.log(String(event.target));
 })
 .on('complete', function() {
+console.log(messageQueue.length)
 console.log(aranna._messageQueue.length)
   console.log('Fastest is ' + this.filter('fastest').pluck('name'));
 })

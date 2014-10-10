@@ -95,8 +95,10 @@ describe('MessageQueue', function () {
       q.remove();
       q.remove();
       q.add('topic3', 'entity3', 'component3');
+      q.add('topic4', 'entity4', 'component4');
       expect(q.toArray()).to.deep.equal([
-        {topic: 'topic3', entity: 'entity3', component: 'component3'}
+        {topic: 'topic3', entity: 'entity3', component: 'component3'},
+        {topic: 'topic4', entity: 'entity4', component: 'component4'}
       ]);
     });
 
@@ -137,6 +139,19 @@ describe('MessageQueue', function () {
         array.pop();
         expect(q.toArray()).to.deep.equal(array);
       }
+    });
+
+    it('should remove all but one and restart', function () {
+      q.add('topic0', 'entity0', 'component0');
+      expect(q.next()).to.equal('topic0');
+      for (var i = 1; i < 3; i++) {
+        q.add('topic' + i, 'entity' + i, 'component' + i);
+        expect(q.next()).to.equal('topic' + i);
+        q.remove();
+      }
+      expect(q.toArray()).to.deep.equal([
+        {topic: 'topic0', entity: 'entity0', component: 'component0'}
+      ]);
     });
 
   });

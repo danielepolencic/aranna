@@ -1,25 +1,24 @@
-var MemoryPool = require('./../src/memoryPool').MemoryPool
-  , ObjectPooled = require('./../src/memoryPool').ObjectPooled
-  , assert = require('assert')
-  , sinon = require('sinon');
+var MemoryPool = require('./../src/memoryPool')
+  , Entity = require('./../src/entity')
+  , expect = require('chai').expect;
 
 describe('MemoryPool', function () {
   var memoryPool, messageQueue;
 
   beforeEach(function () {
-    messageQueue = {publish: sinon.spy()};
-    memoryPool = new MemoryPool(ObjectPooled, messageQueue);
+    messageQueue = {publish: function () {}};
+    memoryPool = new MemoryPool(messageQueue);
   });
 
   describe('MemoryPool.prototype.constructor', function () {
 
     it('should take no capacity argument', function () {
-      assert.equal(memoryPool._capacity, 16);
+      expect(memoryPool._capacity).to.equal(16);
     });
 
     it('should take a capacity argument', function () {
-      var a = new MemoryPool(ObjectPooled, null, 32);
-      assert.equal(a._capacity, 32);
+      var a = new MemoryPool(null, 32);
+      expect(a._capacity).to.equal(32);
     });
 
   });
@@ -27,110 +26,80 @@ describe('MemoryPool', function () {
   describe('MemoryPool.prototype.isEmpty', function () {
 
     it('should return false when empty list', function () {
-      assert(memoryPool.isEmpty());
+      expect(memoryPool.isEmpty()).to.be.true;
     });
 
     it('should return true when not empty list', function () {
       memoryPool.create();
-      assert(!memoryPool.isEmpty());
+      expect(!memoryPool.isEmpty()).to.be.true;
     });
 
   });
 
   describe('MemoryPool.prototype.create', function () {
 
-    it('should add single instance - plenty of capacity', function () {
+    it('should add instances', function () {
+      var array = [];
       for (var i = 0; i < 5; i++) {
-        memoryPool.create();
+        memoryPool.create(i);
+        var entity = new Entity(messageQueue, i);
+        array.push(entity.init(i));
       }
-      assert(memoryPool._capacity - memoryPool._length > 1);
-      var lengthBefore = memoryPool._length;
-      memoryPool.create();
-      assert.equal(memoryPool._length, lengthBefore + 1);
-      assert.equal(memoryPool._length, 6);
-    });
-
-    it('should add single instance - exact capacity', function () {
-      for (var i = 0; i < 15; i++) {
-        memoryPool.create();
-      }
-      assert.equal(memoryPool._capacity - memoryPool._length, 1);
-      var lengthBefore = memoryPool._length;
-      memoryPool.create();
-      assert.equal(memoryPool._length, lengthBefore + 1);
-      assert.equal(memoryPool._length, 16);
-    });
-
-    it('should add single instance - over capacity', function () {
-      for (var i = 0; i < 16; i++) {
-        memoryPool.create();
-      }
-      assert(memoryPool._capacity - memoryPool._length === 0);
-      var lengthBefore = memoryPool._length;
-      memoryPool.create();
-      assert.equal(memoryPool._length, lengthBefore + 1);
-      assert.equal(memoryPool._length, 17);
+      expect(memoryPool.toArray()).to.deep.equal(array);
     });
 
   });
 
   describe('MemoryPool.prototype.remove', function () {
 
-    it('should free up one slot', function () {
-      var a = memoryPool.create();
-      var b = memoryPool.create();
+    it('should not release an alive instance', function () {
+      var a = memoryPool.create('one');
       memoryPool.remove(a);
-      assert.equal(memoryPool._length, 1);
+      expect(memoryPool.toArray()).to
+        .deep.equal([(new Entity(messageQueue, 0)).init('one')]);
+    });
+
+    it('should free up one slot', function () {
+      var a = memoryPool.create('one');
+      var b = memoryPool.create('two');
+      a.release();
+      memoryPool.remove(a);
+      expect(memoryPool.toArray()).to
+        .deep.equal([(new Entity(messageQueue, 0)).init('two')]);
     });
 
     it('should remove the last object', function () {
-      var a = memoryPool.create();
-      var b = memoryPool.create();
+      var a = memoryPool.create('one');
+      var b = memoryPool.create('two');
+      b.release();
+      a.release();
       memoryPool.remove(b);
       memoryPool.remove(a);
-      assert.equal(memoryPool._length, 0);
-      var c = memoryPool.create();
+      expect(memoryPool.toArray()).to.deep.equal([]);
+      var c = memoryPool.create('three');
+      expect(memoryPool.toArray()).to
+        .deep.equal([(new Entity(messageQueue, 0)).init('three')]);
+      c.release();
       memoryPool.remove(c);
-      assert.equal(memoryPool._length, 0);
+      expect(memoryPool.toArray()).to.deep.equal([]);
     });
 
   });
 
-  describe('ObjectPooled.prototype.constructor', function () {
+  describe('MemoryPool.prototype.toArray', function () {
 
-    it('should mark the object as used', function () {
-      var obj = memoryPool.create();
-      assert(!obj.isReleased());
+    it('should return an array', function () {
+      expect(memoryPool.toArray()).to.deep.equal([]);
     });
 
-  });
-
-  describe('ObjectPooled.prototype.release', function () {
-
-    it('should release the object to the pool', function () {
-      var entity = memoryPool.create();
-      entity.release();
-      memoryPool.create().release();
-      assert.equal(memoryPool._length, 0);
-    });
-
-    it('should release the object once', function () {
-      memoryPool.create().release().release();
-    });
-
-  });
-
-  describe('ObjectPooled.prototype.isAlive', function () {
-
-    it('should return true when the entity is alive', function () {
-      obj = memoryPool.create();
-      assert(obj.isAlive());
-    });
-
-    it('should return false when the entity is not alive', function () {
-      obj = memoryPool.create();
-      obj.release();
-      assert(!obj.isAlive());
+    it('should return an array of entities', function () {
+      var array = [];
+      for (var i = 0; i < 5; i++) {
+        memoryPool.create(i);
+        var entity = new Entity(messageQueue, i);
+        array.push(entity.init(i));
+      }
+      expect(memoryPool.toArray()).to.deep.equal(array);
     });
 
   });

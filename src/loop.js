@@ -1,15 +1,13 @@
-var MemoryPool = require('./memoryPool').MemoryPool
+var MemoryPool = require('./memoryPool')
   , MessageQueue = require('./messageQueue')
   , Stream = require('./stream')
-  , Entity = require('./entity')
   , topics = require('./topics');
 
 module.exports = Loop;
 
 function Loop (messageQueue) {
-  MemoryPool.call(this, Entity, messageQueue);
+  MemoryPool.call(this, messageQueue);
   this._streams = [];
-  this._nextQueue = new MessageQueue();
 }
 
 Loop.prototype = Object.create(MemoryPool.prototype, {
@@ -53,7 +51,7 @@ Loop.prototype.run = function (dt) {
     var component = this._messageQueue.component();
 
     var isEntityRefresh = (topics.ENTITY_REFRESH & ~topic) === 0;
-    var isEntityAlive = entity.isAlive();
+    var isEntityAlive = entity.isAlive;
     var isEntityAdded = (topics.ENTITY_ADDED & ~topic) === 0;
 
     if (!isEntityRefresh || !isEntityAlive) {

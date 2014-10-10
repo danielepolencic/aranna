@@ -32,7 +32,6 @@ describe('Aranna', function () {
   };
 
   it('should move the hero', function () {
-    console.log(world._messageQueue.toArray())
     assert.equal(world._messageQueue.length, 1);
     assert.equal(hero.getComponent('position').x, 10);
   });

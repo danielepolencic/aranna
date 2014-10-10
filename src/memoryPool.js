@@ -1,28 +1,23 @@
-var topics = require('./topics');
+var Entity = require('./entity')
+  , topics = require('./topics');
 
 var MIN_CAPACITY = 16;
 var GROW_FACTOR = 3;
 
-module.exports.MemoryPool = MemoryPool;
-module.exports.ObjectPooled = ObjectPooled;
+module.exports = MemoryPool;
 
-function MemoryPool (constructor, messageQueue, capacity) {
+function MemoryPool (messageQueue, capacity) {
   this._constructor = constructor;
   this._messageQueue = messageQueue;
   this._capacity = ~~capacity || MIN_CAPACITY;
 
   this._length = 0;
   this._makeCapacity();
-
-  var that = this;
-  this.remove = function (node) {
-    that._remove(node);
-  };
 }
 
 MemoryPool.prototype._makeCapacity = function () {
   for (var i = this._length; i < this._capacity; ++i) {
-    this[i] = new this._constructor(this._messageQueue, this, i);
+    this[i] = new Entity(this._messageQueue, i);
   }
 };
 
@@ -35,52 +30,32 @@ MemoryPool.prototype.create = function (name) {
   }
   this._length = length + 1;
 
-  return this[length].init(name);
+  return this[length].init.call(this[length], name);
 };
 
 MemoryPool.prototype.isEmpty = function () {
   return this._length === 0;
 };
 
-MemoryPool.prototype._remove = function (node) {
+MemoryPool.prototype.remove = function (node) {
+  if (node.isAlive) return void 0;
+
   this._length -= 1;
-  this._swap(node._id, this._length);
+  var target = node.id;
+  var source = this._length;
+
+  var oldTarget = this[target];
+  this[target] = this[source];
+  this[target].id = oldTarget.id;
+  this[source] = oldTarget;
+  this[source].id = this[target].id;
 };
 
-MemoryPool.prototype._swap = function (indexA, indexB) {
-  var blockA = this[indexA];
-  var blockB = this[indexB];
-
-  this[indexA] = blockB;
-  this[indexA]._id = blockA._id;
-  this[indexB] = blockA;
-  this[indexB]._id = blockB._id;
-};
-
-function ObjectPooled (messageQueue, memoryPool, id) {
-  this._memoryPool = memoryPool;
-  this._id = id;
-  this._isReleased = true;
-  this._messageQueue = messageQueue;
-};
-
-ObjectPooled.prototype.init = function () {
-  this._isReleased = false;
-  return this;
-};
-
-ObjectPooled.prototype.isAlive = function () {
-  return !this._isReleased;
-};
-
-ObjectPooled.prototype.isReleased = function () {
-  return this._isReleased;
-};
-
-ObjectPooled.prototype.release = function () {
-  if (this._isReleased === false) {
-    this._isReleased = true;
-    this._memoryPool.remove(this);
+MemoryPool.prototype.toArray = function () {
+  if (this._length === 0) return new Array(0);
+  var array = new Array(this._length);
+  for (var i = 0; i < this._length; i++) {
+    array[i] = this[i];
   }
-  return this;
+  return array;
 };

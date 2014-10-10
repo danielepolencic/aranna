@@ -1,34 +1,38 @@
-var topics = require('./topics')
-  , ObjectPooled = require('./memoryPool').ObjectPooled;
+var topics = require('./topics');
 
 module.exports = Entity;
 
-function Entity (sandbox, memoryPool, id) {
-  ObjectPooled.call(this, sandbox, memoryPool, id);
+function Entity (messageQueue, id) {
+  this._messageQueue = messageQueue;
+  this.id = id;
   this._name = void 0;
 
   this._componentsLength = 0;
   this._components = {};
+  this._isAlive = false;
 }
 
-Entity.prototype = Object.create(ObjectPooled.prototype, {
-  constructor: {value: Entity}
+Object.defineProperty(Entity.prototype, 'isAlive', {
+  get: function () {
+    return this._isAlive;
+  }
 });
 
-Entity.prototype.inspect =
-Entity.prototype.valueOf =
-Entity.prototype.toString = function () {
-  return '[object Entity {' + this._name + '}]';
-};
+// Entity.prototype.inspect =
+// Entity.prototype.valueOf =
+// Entity.prototype.toString = function () {
+//   return '[object Entity {' + this._name + '}]';
+// };
 
 Entity.prototype.init = function (name) {
+  if (this._isAlive) return this;
+
   this._name = name;
-  if (ObjectPooled.prototype.isReleased.call(this)) {
-    this._messageQueue.publish(topics.ENTITY_ADDED, this);
-    this._components = {};
-    this._componentsLength = 0;
-  }
-  ObjectPooled.prototype.init.call(this);
+  this._isAlive = true;
+  this._messageQueue.publish(topics.ENTITY_ADDED, this);
+  this._components = {};
+  this._componentsLength = 0;
+
   return this;
 };
 
@@ -60,9 +64,10 @@ Entity.prototype.has = function (componentName) {
 };
 
 Entity.prototype.release = function () {
-  if (!ObjectPooled.prototype.isReleased.call(this)) {
-    this._messageQueue.publish(topics.ENTITY_REMOVED, this);
-  }
-  ObjectPooled.prototype.release.call(this);
+  if (!this._isAlive) return this;
+
+  this._isAlive = false;
+  this._messageQueue.publish(topics.ENTITY_REMOVED, this);
+
   return this;
 };

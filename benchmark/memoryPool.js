@@ -1,7 +1,5 @@
 var Benchmark = require('benchmark')
-  , MemoryPool = require('./../src/memoryPool').MemoryPool
-  , ObjectPooled = require('./../src/memoryPool').ObjectPooled
-  , Entity = require('./../src/entity')
+  , MemoryPool = require('./../src/memoryPool')
   , Loop = require('./../src/loop')
   , MessageQueue = require('./../src/messageQueue')
   , Aranna = require('./../index')
@@ -14,10 +12,9 @@ var linkedListBuiltIn = new LinkedListBuiltIn();
 var deque = new Deque();
 
 var sandbox = {publish: function () {}};
-var memoryPool = new MemoryPool(ObjectPooled, sandbox);
-var memoryPoolEntity = new MemoryPool(Entity, sandbox);
+var memoryPool = new MemoryPool(sandbox);
 var messageQueue = new MessageQueue();
-var loop = new Loop(sandbox);
+var loop = new Loop(new MessageQueue());
 var aranna = Aranna();
 
 while (--l) {
@@ -25,7 +22,6 @@ while (--l) {
   deque.push({});
 
   memoryPool.create();
-  memoryPoolEntity.create();
   messageQueue.publish();
   loop.create();
   aranna.create();
@@ -46,29 +42,21 @@ suite
   deque.push(two);
   deque.push(three);
 })
-.add('MemoryPool (ObjectPooled)', function () {
+.add('MemoryPool', function () {
   var one = memoryPool.create();
   var two = memoryPool.create();
   var three = memoryPool.create();
 
-  one.release();
-  two.release();
-  three.release();
-})
-.add('MemoryPool (Entity)', function () {
-  var one = memoryPoolEntity.create();
-  var two = memoryPoolEntity.create();
-  var three = memoryPoolEntity.create();
-
-  one.release();
-  two.release();
-  three.release();
+  memoryPool.remove(one.release());
+  memoryPool.remove(two.release());
+  memoryPool.remove(three.release());
 })
 .add('MessageQueue', function () {
-  messageQueue.publish();
+  messageQueue.add(1, 2, 3);
+  messageQueue.next();
   messageQueue.remove();
 })
-.add('Loop (Entity) - run', function () {
+.add('Loop', function () {
   var one = loop.create();
   var two = loop.create();
   var three = loop.create();
@@ -76,8 +64,10 @@ suite
   one.release();
   two.release();
   three.release();
+
+  loop.run();
 })
-.add('Aranna - run', function () {
+.add('Aranna', function () {
   var one = aranna.create();
   var two = aranna.create();
   var three = aranna.create();
