@@ -1,0 +1,97 @@
+{
+  "name": "danielepolencic/aranna",
+  "version": "0.1.4",
+  "libraries": {
+    "xv": "^1.1.25"
+  },
+  "title": "",
+  "branch": "",
+  "style": {
+    "name": "Future",
+    "componentSet": {
+      "nav": "nav/BasicNav",
+      "header": "header/BannerHeader",
+      "article": "article/BasicArticle",
+      "footer": "footer/BasicFooter"
+    },
+    "fontFamily": "\"Avenir Next\", Helvetica, sans-serif",
+    "heading": {
+      "fontWeight": 500,
+      "textTransform": "uppercase",
+      "letterSpacing": "0.2em"
+    },
+    "alternativeText": {
+      "textTransform": "uppercase",
+      "fontWeight": 400,
+      "letterSpacing": "0.2em",
+      "opacity": 0.75
+    },
+    "colors": {
+      "text": "#333",
+      "background": "#fff",
+      "primary": "#666",
+      "secondary": "#888",
+      "highlight": "#1f80ff",
+      "muted": "#f6f6f6",
+      "border": "#eee"
+    },
+    "layout": {
+      "centered": true,
+      "maxWidth": 1024,
+      "bannerHeight": "80vh"
+    }
+  },
+  "content": [
+    {
+      "component": "nav",
+      "links": [
+        {
+          "href": "https://github.com/danielepolencic/aranna",
+          "text": "GitHub"
+        },
+        {
+          "href": "https://npmjs.com/package/aranna",
+          "text": "npm"
+        }
+      ]
+    },
+    {
+      "component": "header",
+      "heading": "aranna",
+      "subhead": "Entity Component System",
+      "children": [
+        {
+          "component": "ui/TweetButton",
+          "text": "aranna: Entity Component System",
+          "url": null
+        },
+        {
+          "component": "ui/GithubButton",
+          "user": "danielepolencic",
+          "repo": "aranna"
+        }
+      ],
+      "text": "v0.0.1"
+    },
+    {
+      "component": "article",
+      "metadata": {
+        "source": "github.readme"
+      },
+      "html": "\n<p>Aranna is a lightweight dependency-free <a href=\"http://en.wikipedia.org/wiki/Entity_component_system\">Entity Component\nSystem</a> written in\nJavaScript inspired by <a href=\"https://github.com/qiao/ces.js\">ces.js</a>.</p>\n<h2>Basic Usage</h2>\n<p>Components are javascript classes with a required <code>name</code> property. Note that\neach component should have a unique <code>name</code> property.</p>\n<pre><span class=\"hljs-function\"><span class=\"hljs-keyword\">function</span> <span class=\"hljs-title\">Position</span> (<span class=\"hljs-params\">x, y</span>) </span>{\n  <span class=\"hljs-keyword\">this</span>.name = <span class=\"hljs-string\">&apos;position&apos;</span>;\n  <span class=\"hljs-keyword\">this</span>.x = x;\n  <span class=\"hljs-keyword\">this</span>.y = y;\n}\n\n<span class=\"hljs-function\"><span class=\"hljs-keyword\">function</span> <span class=\"hljs-title\">Velocity</span> (<span class=\"hljs-params\">x, y</span>) </span>{\n  <span class=\"hljs-keyword\">this</span>.name = <span class=\"hljs-string\">&apos;velocity&apos;</span>;\n  <span class=\"hljs-keyword\">this</span>.x = x;\n  <span class=\"hljs-keyword\">this</span>.y = y;\n};\n\n<span class=\"hljs-function\"><span class=\"hljs-keyword\">function</span> <span class=\"hljs-title\">Health</span> (<span class=\"hljs-params\">maxHealth</span>) </span>{\n  <span class=\"hljs-keyword\">this</span>.name = <span class=\"hljs-string\">&apos;health&apos;</span>;\n  <span class=\"hljs-keyword\">this</span>.health = <span class=\"hljs-keyword\">this</span>.maxHealth = maxHealth;\n};\n\nHealth.prototype.isDead: <span class=\"hljs-function\"><span class=\"hljs-keyword\">function</span> (<span class=\"hljs-params\"></span>) </span>{\n  <span class=\"hljs-keyword\">return</span> <span class=\"hljs-keyword\">this</span>.health &lt;= <span class=\"hljs-number\">0</span>;\n};\n\nHealth.prototype.receiveDamage: <span class=\"hljs-function\"><span class=\"hljs-keyword\">function</span> (<span class=\"hljs-params\">damage</span>) </span>{\n <span class=\"hljs-keyword\">this</span>.health -= damage;\n}</pre><p>An entity is essentially a container of one or more components.</p>\n<pre><span class=\"hljs-keyword\">var</span> hero = entity();\nhero.addComponent(<span class=\"hljs-keyword\">new</span> Position(<span class=\"hljs-number\">0</span>, <span class=\"hljs-number\">0</span>));\nhero.addComponent(<span class=\"hljs-keyword\">new</span> Velocity(<span class=\"hljs-number\">0</span>, <span class=\"hljs-number\">0</span>));\nhero.addComponent(<span class=\"hljs-keyword\">new</span> Health(<span class=\"hljs-number\">100</span>));</pre><p>The system is responsible for updating the entities.</p>\n<pre><span class=\"hljs-function\"><span class=\"hljs-keyword\">function</span> <span class=\"hljs-title\">PhysicSystem</span> (<span class=\"hljs-params\"></span>) </span>{};\n\nPhysicSystem.prototype.update = <span class=\"hljs-function\"><span class=\"hljs-keyword\">function</span> (<span class=\"hljs-params\">world, dt</span>) </span>{\n    <span class=\"hljs-keyword\">var</span> entities, position, velocity;\n\n    entities = world.getEntities(<span class=\"hljs-string\">&apos;position&apos;</span>, <span class=\"hljs-string\">&apos;velocity&apos;</span>);\n\n    entities.forEach(<span class=\"hljs-function\"><span class=\"hljs-keyword\">function</span> (<span class=\"hljs-params\">entity</span>) </span>{\n      position = entity.getComponent(<span class=\"hljs-string\">&apos;position&apos;</span>);\n      velocity = entity.getComponent(<span class=\"hljs-string\">&apos;velocity&apos;</span>);\n      position.x += velocity.x * dt;\n      position.y += velocity.y * dt;\n    });\n  }\n};</pre><p>The world is the container of all the entities and systems. Calling the <code>update</code>\nmethod will sequentially update all the systems, in the order they were added.</p>\n<pre><span class=\"hljs-keyword\">var</span> world = World();\n\nworld.addEntity(hero);\n<span class=\"hljs-comment\">// ... add other entities</span>\n\nworld.addSystem(<span class=\"hljs-keyword\">new</span> PhysicSystem());\n<span class=\"hljs-comment\">// ... add other systems</span>\n\nrequestAnimationFrame(<span class=\"hljs-function\"><span class=\"hljs-keyword\">function</span> (<span class=\"hljs-params\"></span>) </span>{\n    world.update(<span class=\"hljs-comment\">/* arguments are passed to the systems */</span>);\n})</pre><p>A system is notified when it is added or removed from the world:</p>\n<pre><span class=\"hljs-function\"><span class=\"hljs-keyword\">function</span> <span class=\"hljs-title\">MySystem</span> (<span class=\"hljs-params\"></span>) </span>{}\n\nMySystem.prototype.addedToWorld = <span class=\"hljs-function\"><span class=\"hljs-keyword\">function</span> (<span class=\"hljs-params\">world</span>)  </span>{\n  <span class=\"hljs-comment\">// Code to handle being added to world.</span>\n};\n\nMySystem.prototype.removedFromWorld = <span class=\"hljs-function\"><span class=\"hljs-keyword\">function</span> (<span class=\"hljs-params\">world</span>) </span>{\n  <span class=\"hljs-comment\">// Code to handle being removed from world.</span>\n}</pre><p>The world emits signals when entities are added or removed. You can listen for\nspecific entities and handle the signal accordingly:</p>\n<pre><span class=\"hljs-function\"><span class=\"hljs-keyword\">function</span> <span class=\"hljs-title\">MySystem</span> (<span class=\"hljs-params\"></span>) </span>{}\n\nMySystem.prototype.addedToWorld = <span class=\"hljs-function\"><span class=\"hljs-keyword\">function</span> (<span class=\"hljs-params\">world</span>)  </span>{\n\n  world.onEntityAdded(<span class=\"hljs-string\">&apos;position&apos;</span>, <span class=\"hljs-string\">&apos;velocity&apos;</span>)(<span class=\"hljs-function\"><span class=\"hljs-keyword\">function</span> (<span class=\"hljs-params\">entity</span>) </span>{\n    <span class=\"hljs-comment\">/*\n      This function is called whenever an entity with both &apos;position&apos; and\n      &apos;velocity&apos; components is added to the world.\n    */</span>\n  });\n\n  world.onEntityRemoved(<span class=\"hljs-string\">&apos;position&apos;</span>, <span class=\"hljs-string\">&apos;velocity&apos;</span>)(<span class=\"hljs-function\"><span class=\"hljs-keyword\">function</span> (<span class=\"hljs-params\">entity</span>) </span>{\n    <span class=\"hljs-comment\">/*\n       This function is called whenever an entity with both &apos;position&apos; and\n       &apos;velocity&apos; components is removed from the world.\n     */</span>\n  });\n\n  world.onComponentAddedToEntity(<span class=\"hljs-string\">&apos;position&apos;</span>, <span class=\"hljs-string\">&apos;velocity&apos;</span>)(<span class=\"hljs-function\"><span class=\"hljs-keyword\">function</span> (<span class=\"hljs-params\">entity</span>) </span>{\n    <span class=\"hljs-comment\">/*\n       This function is called whenever a component is added to an entity; for\n       example, when an entity with only &apos;position&apos; has &apos;velocity&apos; added to it.\n     */</span>\n  });\n\n  world.onComponentRemovedFromEntity(<span class=\"hljs-string\">&apos;position&apos;</span>, <span class=\"hljs-string\">&apos;velocity&apos;</span>)(<span class=\"hljs-function\"><span class=\"hljs-keyword\">function</span> (<span class=\"hljs-params\">entity</span>) </span>{\n    <span class=\"hljs-comment\">/*\n       This function is called whenever a component is removed to an entity; for\n       example, when an entity with both &apos;position&apos; and &apos;velocity&apos; has\n       &apos;velocity&apos; removed from it.\n     */</span>\n  });\n\n};</pre>"
+    },
+    {
+      "component": "footer",
+      "links": [
+        {
+          "href": "https://github.com/danielepolencic/aranna",
+          "text": "GitHub"
+        },
+        {
+          "href": "https://github.com/danielepolencic",
+          "text": "danielepolencic"
+        }
+      ]
+    }
+  ]
+}
